@@ -13,9 +13,12 @@ import { User } from '../../../models/user.model';
       <div class="container">
         <div class="header-content">
           <div class="logo">
-            <a routerLink="/">
-              <h1>PollWave</h1>
-            </a>
+            <div class="logo-container">
+              <a routerLink="/">
+                  <img src="assets/logo.png" alt="PollWave logo" />
+                  <h1><span>PollWave</span></h1>
+              </a>
+            </div>
           </div>
           
           <nav class="nav">
@@ -60,7 +63,7 @@ import { User } from '../../../models/user.model';
     </header>
   `,
   styles: [`
-    .header {
+    .header {    
       background-color: var(--primary-color);
       color: var(--light-text);
       padding: 16px 0;
@@ -76,18 +79,36 @@ import { User } from '../../../models/user.model';
       align-items: center;
     }
     
-    .logo h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0;
-      color: var(--light-text);
+    .logo-container {
+        display: flex;
+        align-items: center;
     }
     
-    .logo a {
+    .logo-container a{
+      display: flex;
+      align-items: center;
       text-decoration: none;
       color: var(--light-text);
     }
+
+    .logo h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--light-text);
+    }
     
+    .logo h1 span {
+        font-size: inherit;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo img {
+        width: 40px;
+        margin-right: 10px;
+    }
+
     .nav-list {
       display: flex;
       list-style: none;
