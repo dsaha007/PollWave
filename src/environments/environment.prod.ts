@@ -1,11 +1,12 @@
 export const environment = {
   production: true,
   firebase: {
-    apiKey: "AIzaSyCc3n2sbuzb6AljZS-xLpPeBZbmN70t52k",
-    authDomain: "pollapp-b7123.firebaseapp.com",
-    projectId: "pollapp-b7123",
-    storageBucket: "pollapp-b7123.firebasestorage.app",
-    messagingSenderId: "140545398866",
-    appId: "1:140545398866:web:d592f07c071a814ec0e78b"
+    apiKey: "AIzaSyDYwekl_jghtftmIxZR2O5co4xW3OQizzM",
+    authDomain: "pollwave-f25ca.firebaseapp.com",
+    projectId: "pollwave-f25ca",
+    storageBucket: "pollwave-f25ca.firebasestorage.app",
+    messagingSenderId: "961580668291",
+    appId: "1:961580668291:web:8829dc4f804fae80f392b6",
+    measurementId: "G-NYYQ2Y9DLK"
   }
 };

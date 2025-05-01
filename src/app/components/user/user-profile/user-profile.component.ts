@@ -49,7 +49,7 @@ import { Poll } from '../../../models/poll.model';
           } @else {
             <div class="user-polls-grid">
               @for (poll of userPolls; track poll.id) {
-                <div class="poll-card">
+                <div class="poll-card" [class.active-poll]="poll.isActive">
                   <h3>{{ poll.question }}</h3>
                   <div class="poll-meta">
                     <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -166,6 +166,10 @@ import { Poll } from '../../../models/poll.model';
       transition: var(--transition);
     }
     
+    .poll-card.active-poll {
+      background-color: #e2fddf;
+    }
+
     .poll-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);

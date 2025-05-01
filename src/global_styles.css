@@ -1,9 +1,9 @@
 /* Global styles */
 :root {
-  --primary-color: #003366;
+  --primary-color:  #423435;
   --secondary-color: #F5F5F5;
-  --accent-color: #FF6600;
-  --text-color: #333333;
+  --accent-color:  #EC6408;
+  --text-color: #000000;
   --light-text: #FFFFFF;
   --danger-color: #DC3545;
   --success-color: #28A745;
@@ -16,7 +16,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Roboto', Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 body {

@@ -197,7 +197,9 @@ export class LoginComponent {
     switch (errorCode) {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
-        return 'Invalid email or password.';
+        return errorCode === 'auth/user-not-found'
+        ? 'User does not exist.'
+        : 'Invalid email or password.';
       case 'auth/invalid-email':
         return 'Please enter a valid email address.';
       case 'auth/user-disabled':
@@ -205,7 +207,7 @@ export class LoginComponent {
       case 'auth/too-many-requests':
         return 'Too many unsuccessful login attempts. Please try again later.';
       default:
-        return 'An error occurred during login. Please try again.';
+        return 'Invalid email or password.';
     }
   }
 }

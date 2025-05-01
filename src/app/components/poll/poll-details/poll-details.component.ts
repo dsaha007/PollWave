@@ -434,7 +434,9 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         if (poll) {
           this.isCreator = this.currentUser?.uid === poll.createdBy;
           this.checkUserVote();
-          this.renderChart();
+          setTimeout(() => {
+            this.renderChart();
+          }, 0);
         }
       },
       error: (error) => {
@@ -487,20 +489,20 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     this.isVoting = true;
     this.errorMessage = '';
     
-    try {
-      await this.pollService.vote(this.pollId, this.selectedOptionId);
+    try {      
+      await this.pollService.vote(this.pollId, this.selectedOptionId);      
       this.successMessage = 'Your vote has been recorded!';
       this.hasVoted = true;
-      
-      // Find the option the user voted for
-      if (this.poll) {
-        this.userVoteOption = this.poll.options.find(option => option.id === this.selectedOptionId) || null;
-      }
-      
-      // Re-render chart after a small delay
-      setTimeout(() => {
+      await this.pollService.getPoll(this.pollId).subscribe((poll)=>{
+        this.poll = poll;
+        if(this.poll){
+          this.userVoteOption = this.poll.options.find(option => option.id === this.selectedOptionId) || null;
+        }
+
+
+
         this.renderChart();
-      }, 500);
+      })
     } catch (error) {
       console.error('Error submitting vote:', error);
       this.errorMessage = error instanceof Error ? error.message : 'Failed to submit vote. Please try again.';
@@ -510,19 +512,25 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   }
   
   async togglePollStatus(): Promise<void> {
-    if (!this.pollId || !this.isCreator) return;
-    
-    this.isToggling = true;
-    this.errorMessage = '';
-    
-    try {
-      await this.pollService.togglePollStatus(this.pollId);
-      // Poll will be updated via the subscription
-    } catch (error) {
-      console.error('Error toggling poll status:', error);
-      this.errorMessage = 'Failed to update poll status.';
-    } finally {
-      this.isToggling = false;
+    if (this.pollId && this.isCreator && this.poll) {
+      const action = this.poll.isActive ? 'close' : 'reopen';
+      const confirmation = confirm(`Are you sure you want to ${action} this poll?`);
+      
+      if (confirmation) {
+        this.isToggling = true;
+        this.errorMessage = '';
+        try {
+          await this.pollService.togglePollStatus(this.pollId);
+          // Poll will be updated via the subscription
+          this.successMessage = `Poll ${action}d successfully!`;
+          this.loadPoll();
+        } catch (error) {
+          console.error('Error toggling poll status:', error);
+          this.errorMessage = 'Failed to update poll status.';
+        } finally {
+          this.isToggling = false;
+        }
+      }
     }
   }
   
@@ -584,13 +592,29 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     const ctx = chartElement.getContext('2d');
     if (!ctx) return;
     
-    const labels = this.poll.options.map(option => option.text);
-    const data = this.poll.options.map(option => option.votes);
-    const backgroundColors = this.poll.options.map((_, index) => this.getBarColor(index));
-    
+    let labels: string[];
+    let data: number[];
+    let backgroundColors: string[];
+
+    if(this.poll.options.length > 0) {
+       labels = this.poll.options.map(option => option.text);
+       data = this.poll.options.map(option => option.votes);
+       backgroundColors = this.poll.options.map((_, index) => this.getBarColor(index));
+    } else {
+        labels = ["Option 1", "Option 2", "Option 3"];
+        data = [1, 2, 3];
+        backgroundColors = this.poll.options.map((_, index) => this.getBarColor(index));
+
+        if (backgroundColors.length < 3){
+            backgroundColors = ["#003366", "#2563EB", "#4F86F7"]
+        }
+    }
+
+
+
     this.chartInstance = new Chart(ctx, {
       type: 'bar',
-      data: {
+      data: { 
         labels: labels,
         datasets: [{
           label: 'Votes',

@@ -22,10 +22,10 @@ import { Poll } from '../../models/poll.model';
             <div class="hero-cta">
               @if (user$ | async) {
                 <a routerLink="/polls/create" class="btn btn-accent">Create New Poll</a>
-                <a routerLink="/polls" class="btn btn-outline">Browse Polls</a>
+                <a routerLink="/polls" class="btn btn-accent">Browse Polls</a>
               } @else {
                 <a routerLink="/register" class="btn btn-accent">Sign Up Free</a>
-                <a routerLink="/login" class="btn btn-outline">Log In</a>
+                <a routerLink="/login" class="btn btn-accent">Log In</a>
               }
             </div>
           </div>
@@ -51,7 +51,7 @@ import { Poll } from '../../models/poll.model';
           } @else {
             <div class="polls-grid">
               @for (poll of latestPolls; track poll.id) {
-                <div class="poll-card">
+                <div class="poll-card" [class.closed-poll]="!poll.isActive" [class.active-poll]="poll.isActive">
                   <h3>{{ poll.question }}</h3>
                   <div class="poll-meta">
                     <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -186,6 +186,14 @@ import { Poll } from '../../models/poll.model';
     .poll-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .poll-card.closed-poll {
+      background-color: #ffe6e6; /* Light red */
+    }
+
+    .poll-card.active-poll {
+      background-color: #e6ffe6; /* Light green */
     }
     
     .poll-card h3 {

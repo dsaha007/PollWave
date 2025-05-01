@@ -59,7 +59,7 @@ import { Poll } from '../../../models/poll.model';
       } @else {
         <div class="polls-grid">
           @for (poll of filteredPolls; track poll.id) {
-            <div class="poll-card">
+            <div class="poll-card" [class.active-poll]="poll.isActive" [class.closed-poll]="!poll.isActive">
               <h3>{{ poll.question }}</h3>
               <div class="poll-meta">
                 <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -127,6 +127,14 @@ import { Poll } from '../../../models/poll.model';
       transform: translateY(-5px);
       box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
     }
+    
+    .poll-card.closed-poll {
+      background-color: #ffe6e6; /* Light red */
+    }
+
+    .poll-card.active-poll {
+        background-color: #e0ffe0;
+      }
     
     .poll-card h3 {
       font-size: 1.2rem;
