@@ -26,7 +26,7 @@ import { Poll } from '../../../models/poll.model';
             <div class="user-details">
               <h1>{{ user?.displayName || 'User' }}</h1>
               <p>{{ user?.email }}</p>
-              <p class="user-joined">Member since {{ user?.createdAt | date:'mediumDate' }}</p>
+              <p class="user-joined">Member since {{ user?.memberSince | date:'mediumDate' }}</p>
             </div>
           </div>
           
@@ -258,6 +258,11 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.authService.getCurrentUser();
+    if (this.user && this.user.createdAt) {
+      // Convert createdAt (Timestamp) to Date and assign to memberSince
+      this.user.memberSince = this.user.createdAt.toDate();
+      
+    }
     if (this.user) {
       this.loadUserPolls();
     }
