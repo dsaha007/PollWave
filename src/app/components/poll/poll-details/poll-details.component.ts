@@ -565,12 +565,12 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   
   getBarColor(index: number): string {
     const colors = [
-      '#003366', // Primary
+      '#423435', // Primary
       '#2563EB',
       '#4F86F7',
       '#7E9CE0',
       '#A3B9EB',
-      '#FF6600', // Accent
+      '#EC6408', // Accent
       '#FF8533',
       '#FFA366'
     ];
