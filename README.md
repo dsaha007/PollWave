@@ -1,5 +1,5 @@
 
-![PollWave Logo](./src/assets/logo.png)
+![header](./src/assets/github-header-image.png)
 
 # PollWave
 
@@ -32,7 +32,7 @@ PollWave is a dynamic web application built with Angular that allows users to cr
 
 2. **Clone the Repository:**
 ```bash
-git clone `https://github.com/dsaha007/angular-poll-application`
+git clone https://github.com/dsaha007/angular-poll-application
 ```
 
 3. **Navigate to the Project Directory:**
