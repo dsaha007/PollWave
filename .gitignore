@@ -2,4 +2,5 @@
 dist
 node_modules
 .firebase
-environments
+src/environments/
+
