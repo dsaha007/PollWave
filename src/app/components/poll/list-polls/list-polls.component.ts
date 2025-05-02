@@ -234,7 +234,6 @@ export class ListPollsComponent implements OnInit {
   applyFilters(): void {
     let filtered = [...this.allPolls];
     
-    // Apply search filter
     if (this.searchQuery?.trim()) {
       const query = this.searchQuery.toLowerCase().trim();
       filtered = filtered.filter(poll => 
@@ -242,7 +241,6 @@ export class ListPollsComponent implements OnInit {
       );
     }
     
-    // Apply status filter
     if (this.statusFilter !== 'all') {
       const isActive = this.statusFilter === 'active';
       filtered = filtered.filter(poll => poll.isActive === isActive);

@@ -259,7 +259,6 @@ export class UserProfileComponent implements OnInit {
   ngOnInit(): void {
     this.user = this.authService.getCurrentUser();
     if (this.user && this.user.createdAt) {
-      // Convert createdAt (Timestamp) to Date and assign to memberSince
       this.user.memberSince = this.user.createdAt.toDate();
       
     }

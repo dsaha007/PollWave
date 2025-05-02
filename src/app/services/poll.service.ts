@@ -160,7 +160,6 @@ export class PollService {
         throw new Error('User must be authenticated to vote');
       }
       
-      // Check if user has already voted
       const votesRef = collection(this.db, 'votes');
       const q = query(votesRef, 
         where('pollId', '==', pollId),
@@ -172,7 +171,6 @@ export class PollService {
         throw new Error('User has already voted on this poll');
       }
       
-      // Get the poll
       const pollRef = doc(this.db, 'polls', pollId);
       const pollSnap = await getDoc(pollRef);
       
@@ -185,13 +183,11 @@ export class PollService {
         throw new Error('This poll is no longer active');
       }
       
-      // Find the option
       const optionIndex = pollData.options.findIndex(opt => opt.id === optionId);
       if (optionIndex === -1) {
         throw new Error('Option not found');
       }
       
-      // Update poll - increment the vote count for the selected option
       const updatedOptions = [...pollData.options];
       updatedOptions[optionIndex] = {
         ...updatedOptions[optionIndex],
@@ -203,7 +199,6 @@ export class PollService {
         totalVotes: (pollData.totalVotes || 0) + 1
       });
       
-      // Record the vote
       await addDoc(collection(this.db, 'votes'), {
         pollId,
         optionId,
@@ -232,7 +227,6 @@ export class PollService {
       
       const pollData = pollSnap.data() as Poll;
       
-      // Only the creator can toggle the status
       if (pollData.createdBy !== user.uid) {
         throw new Error('Only the poll creator can change its status');
       }
@@ -262,15 +256,12 @@ export class PollService {
       
       const pollData = pollSnap.data() as Poll;
       
-      // Only the creator can delete the poll
       if (pollData.createdBy !== user.uid) {
         throw new Error('Only the poll creator can delete it');
       }
       
-      // Delete the poll
       await deleteDoc(pollRef);
       
-      // Delete related votes
       const votesRef = collection(this.db, 'votes');
       const q = query(votesRef, where('pollId', '==', pollId));
       const votesSnap = await getDocs(q);

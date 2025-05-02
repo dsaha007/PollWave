@@ -200,17 +200,14 @@ export class CreatePollComponent {
   }
   
   isFormValid(): boolean {
-    // Question must not be empty and at least 5 chars
     if (!this.question || this.question.length < 5) {
       return false;
     }
     
-    // At least 2 options
     if (this.options.length < 2) {
       return false;
     }
     
-    // All options must have content
     return !this.options.some(option => !option.trim());
   }
   
@@ -223,7 +220,6 @@ export class CreatePollComponent {
     this.errorMessage = '';
     
     try {
-      // Filter out any empty options (should not happen due to validation)
       const validOptions = this.options.filter(option => option.trim());
       
       const pollId = await this.pollService.createPoll(this.question, validOptions);

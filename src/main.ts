@@ -5,7 +5,6 @@ import { routes } from './app/app.routes';
 import { initializeApp } from 'firebase/app';
 import { environment } from './environments/environment';
 
-// Initialize Firebase
 initializeApp(environment.firebase);
 
 bootstrapApplication(AppComponent, {

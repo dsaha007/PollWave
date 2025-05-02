@@ -8,7 +8,6 @@ import { VoteService } from '../../../services/vote.service';
 import { Poll, PollOption } from '../../../models/poll.model';
 import { Subscription } from 'rxjs';
 
-// Register Chart.js components
 Chart.register(...registerables);
 
 @Component({
@@ -521,7 +520,6 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         this.errorMessage = '';
         try {
           await this.pollService.togglePollStatus(this.pollId);
-          // Poll will be updated via the subscription
           this.successMessage = `Poll ${action}d successfully!`;
           this.loadPoll();
         } catch (error) {
@@ -581,7 +579,6 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   private renderChart(): void {
     if (!this.poll) return;
     
-    // Destroy previous chart if it exists
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }

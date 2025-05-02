@@ -39,7 +39,6 @@ export class AuthService {
           if (userData) {
             this.userSubject.next(userData);
           } else {
-            // User exists in Auth but not in Firestore
             this.userSubject.next(null);
           }
         });
@@ -70,10 +69,8 @@ export class AuthService {
       const credential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = credential.user;
       
-      // Update profile
       await updateProfile(user, { displayName });
       
-      // Create user document in Firestore
       const userData: User = {
         uid: user.uid,
         email: user.email!,
@@ -95,7 +92,6 @@ export class AuthService {
   async login(email: string, password: string): Promise<void> {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
-      // Auth state listener will handle updating the user subject
       this.router.navigate(['/']);
     } catch (error) {
       console.error('Login error:', error);
