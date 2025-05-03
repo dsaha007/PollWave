@@ -278,4 +278,28 @@ export class PollService {
       throw error;
     }
   }
+
+  listenToPoll(pollId: string): Observable<Poll | null> {
+    return new Observable((observer) => {
+      const pollRef = doc(this.db, 'polls', pollId);
+
+      const unsubscribe = onSnapshot(pollRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data() as Poll;
+          observer.next({
+            ...data,
+            id: docSnap.id,
+            createdAt: (data.createdAt as any).toDate()
+          });
+        } else {
+          observer.next(null);
+        }
+      }, (error) => {
+        console.error('Error listening to poll:', error);
+        observer.error(error);
+      });
+
+      return () => unsubscribe();
+    });
+  }
 }

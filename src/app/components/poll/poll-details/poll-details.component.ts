@@ -558,8 +558,29 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     this.pollId = this.route.snapshot.paramMap.get('id');
     
     if (this.pollId) {
-      this.loadPoll();
-      
+      this.pollSub = this.pollService.listenToPoll(this.pollId).subscribe({
+        next: (poll) => {
+          this.poll = poll;
+          this.isLoading = false;
+
+          if (poll) {
+            this.isCreator = this.currentUser?.uid === poll.createdBy;
+            this.checkUserVote();
+            this.fetchVotes();
+
+            // Render the chart after poll data is loaded
+            setTimeout(() => {
+              this.renderChart();
+            }, 0);
+          }
+        },
+        error: (error) => {
+          console.error('Error listening to poll:', error);
+          this.isLoading = false;
+          this.errorMessage = 'Failed to load poll details.';
+        }
+      });
+
       this.userSub = this.authService.user$.subscribe(user => {
         if (user && this.poll) {
           this.isCreator = user.uid === this.poll.createdBy;
