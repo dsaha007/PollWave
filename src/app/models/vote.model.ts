@@ -4,4 +4,5 @@ export interface Vote {
   userId: string;
   optionId: string;
   createdAt: Date;
+  userDisplayName?: string; 
 }

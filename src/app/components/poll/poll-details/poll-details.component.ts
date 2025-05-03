@@ -107,20 +107,24 @@ Chart.register(...registerables);
               </div>
               
               <div class="results-table">
-                @for (option of poll.options; track option.id) {
-                  <div class="result-row">
-                    <div class="result-text">{{ option.text }}</div>
-                    <div class="result-bar-container">
-                      <div 
-                        class="result-bar" 
-                        [style.width.%]="getPercentage(option)"
-                        [style.background-color]="getBarColor($index)"
-                      ></div>
-                      <div class="result-percentage">{{ getPercentage(option) }}%</div>
-                    </div>
-                    <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
+                <div *ngFor="let option of poll?.options; let index = index" class="result-row">
+                  <div class="result-text">{{ option.text }}</div>
+                  <div class="result-bar-container">
+                    <div 
+                      class="result-bar" 
+                      [style.width.%]="getPercentage(option)"
+                      [style.background-color]="getBarColor(index)"
+                    ></div>
+                    <div class="result-percentage">{{ getPercentage(option) }}%</div>
                   </div>
-                }
+                  <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
+                  <div class="result-voters">
+                    <strong>Voters:</strong>
+                    <ul class="voter-list">
+                      <li class="inline-block" *ngFor="let voter of option.voters">{{ voter }}</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -152,6 +156,17 @@ Chart.register(...registerables);
     </div>
   `,
   styles: [`
+    .voter-list {
+      display: flex;
+      list-style-type: none; 
+      padding: 0;
+      margin: 0; 
+    }
+
+    .inline-block {
+        margin-right: 10px; 
+    }
+
     .poll-details-container {
       max-width: 800px;
       margin: 40px auto;
@@ -424,15 +439,16 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   
   private loadPoll(): void {
     if (!this.pollId) return;
-    
+
     this.pollSub = this.pollService.getPoll(this.pollId).subscribe({
       next: (poll) => {
         this.poll = poll;
         this.isLoading = false;
-        
+
         if (poll) {
           this.isCreator = this.currentUser?.uid === poll.createdBy;
           this.checkUserVote();
+          this.fetchVotes(); // Fetch voter information
           setTimeout(() => {
             this.renderChart();
           }, 0);
@@ -474,6 +490,23 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error fetching user vote details:', error);
+      }
+    });
+  }
+  
+  private fetchVotes(): void {
+    if (!this.pollId) return;
+
+    this.voteService.getPollVotes(this.pollId).subscribe({
+      next: (votes) => {
+        this.poll?.options.forEach(option => {
+          option.voters = votes
+            .filter(vote => vote.optionId === option.id)
+            .map(vote => vote.userDisplayName || 'Anonymous');
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching votes:', error);
       }
     });
   }

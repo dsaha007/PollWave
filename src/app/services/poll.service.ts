@@ -203,6 +203,7 @@ export class PollService {
         pollId,
         optionId,
         userId: user.uid,
+        userDisplayName: user.displayName,
         createdAt: new Date()
       });
     } catch (error) {
