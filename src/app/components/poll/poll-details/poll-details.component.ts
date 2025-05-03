@@ -556,7 +556,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.pollId = this.route.snapshot.paramMap.get('id');
-    
+        
     if (this.pollId) {
       this.pollSub = this.pollService.listenToPoll(this.pollId).subscribe({
         next: (poll) => {
@@ -589,6 +589,9 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
       });
     } else {
       this.isLoading = false;
+      this.errorMessage = "Poll not found";
+      this.poll = null;
+      
     }
   }
   
@@ -604,31 +607,6 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
-  }
-  
-  private loadPoll(): void {
-    if (!this.pollId) return;
-
-    this.pollSub = this.pollService.getPoll(this.pollId).subscribe({
-      next: (poll) => {
-        this.poll = poll;
-        this.isLoading = false;
-
-        if (poll) {
-          this.isCreator = this.currentUser?.uid === poll.createdBy;
-          this.checkUserVote();
-          this.fetchVotes(); 
-          setTimeout(() => {
-            this.renderChart();
-          }, 0);
-        }
-      },
-      error: (error) => {
-        console.error('Error loading poll:', error);
-        this.isLoading = false;
-        this.errorMessage = 'Failed to load poll details.';
-      }
-    });
   }
   
   private checkUserVote(): void {
@@ -723,7 +701,6 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         try {
           await this.pollService.togglePollStatus(this.pollId);
           this.successMessage = `Poll ${action}d successfully!`;
-          this.loadPoll();
         } catch (error) {
           console.error('Error toggling poll status:', error);
           this.errorMessage = 'Failed to update poll status.';

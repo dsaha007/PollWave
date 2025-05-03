@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { PollService } from '../../../services/poll.service';
 import { AuthService } from '../../../services/auth.service';
 import { Poll } from '../../../models/poll.model';
 
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-list-polls',
   standalone: true,
@@ -15,7 +16,7 @@ import { Poll } from '../../../models/poll.model';
       <div class="poll-list-header">
         <h1>Browse Polls</h1>
         @if (user$ | async) {
-          <a routerLink="/polls/create" class="btn btn-accent">Create New Poll</a>
+        <a routerLink="/polls/create" class="btn btn-accent">Create New Poll</a>
         }
       </div>
       
@@ -50,7 +51,7 @@ import { Poll } from '../../../models/poll.model';
             <p>No polls match your filters.</p>
             <button class="btn btn-outline" (click)="resetFilters()">Clear Filters</button>
           } @else {
-            <p>No polls available yet.</p>
+          <p>No polls available yet.</p>
             @if (user$ | async) {
               <a routerLink="/polls/create" class="btn btn-accent">Create the First Poll</a>
             }
@@ -59,7 +60,7 @@ import { Poll } from '../../../models/poll.model';
       } @else {
         <div class="polls-grid">
           @for (poll of filteredPolls; track poll.id) {
-            <div class="poll-card" [class.active-poll]="poll.isActive" [class.closed-poll]="!poll.isActive">
+          <div class="poll-card" [class.active-poll]="poll.isActive" [class.closed-poll]="!poll.isActive">
               <h3>{{ poll.question }}</h3>
               <div class="poll-meta">
                 <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -201,10 +202,11 @@ import { Poll } from '../../../models/poll.model';
     }
   `]
 })
-export class ListPollsComponent implements OnInit {
+export class ListPollsComponent implements OnInit, OnDestroy {
+  private pollsSubscriptions: Subscription[] = [];
   isLoading = true;
   allPolls: Poll[] = [];
-  filteredPolls: Poll[] = [];
+  filteredPolls: Poll[] = []
   searchQuery = '';
   statusFilter = 'all';
   
@@ -214,23 +216,47 @@ export class ListPollsComponent implements OnInit {
   user$ = this.authService.user$;
   
   ngOnInit(): void {
-    this.loadPolls();
+    this.loadAndSubscribePolls();
   }
   
-  private loadPolls(): void {
-    this.pollService.getPolls().subscribe({
-      next: (polls) => {
-        this.allPolls = polls;
-        this.filteredPolls = [...this.allPolls];
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading polls:', error);
-        this.isLoading = false;
+  ngOnDestroy(): void {
+    this.pollsSubscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  
+  private loadAndSubscribePolls(): void {
+    this.pollsSubscriptions.push(
+      this.pollService.getPolls().subscribe({
+        next: (initialPolls) => {
+          this.allPolls = initialPolls;
+          this.filteredPolls = [...this.allPolls];
+          this.isLoading = false;
+          initialPolls.forEach(poll => {
+            if(poll.id) return this.subscribeToPollUpdates(poll.id);
+          });
+        },
+        error: (error) => {
+          console.error('Error loading initial polls:', error);
+          this.isLoading = false;
+        }
+      })
+    );
+  }
+
+  private subscribeToPollUpdates(pollId: string): void {
+    const pollSub = this.pollService.listenToPoll(pollId).subscribe((updatedPoll) => {
+      if (updatedPoll) {
+        const index = this.allPolls.findIndex((p) => p.id === updatedPoll.id);
+        if (index !== -1) {
+          this.allPolls[index] = updatedPoll;
+        } else {
+          this.allPolls.push(updatedPoll);
+        }
+        this.applyFilters();
       }
     });
+    this.pollsSubscriptions.push(pollSub);
   }
-  
   applyFilters(): void {
     let filtered = [...this.allPolls];
     
