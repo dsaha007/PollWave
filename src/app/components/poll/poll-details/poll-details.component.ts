@@ -120,15 +120,30 @@ Chart.register(...registerables);
                   <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
                   <div class="result-voters">
                     <strong>Voters:</strong>
-                    <ul class="voter-list">
-                      <li class="inline-block" *ngFor="let voter of option.voters">{{ voter }}</li>
-                    </ul>
+                    <div class="voter-grid">
+                        <div 
+                          *ngFor="let voter of option.voters; let index = index" 
+                          class="voter-avatar" 
+                          [style.background-color]="getBarColor(index)"
+                          [title]="voter" 
+                          (click)="showFullName(voter)" 
+                        >
+                        <span class="voter-initial">{{ voter.charAt(0).toUpperCase() }}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
+            
+          <div *ngIf="selectedVoter" class="modal-overlay">
+            <div class="modal">
+              <p>Voter: {{ selectedVoter }}</p>
+              <button class="btn btn-close" (click)="closeFullName()">Close</button>
+            </div>
+          </div>
+
           <div class="poll-actions">
             <a routerLink="/polls" class="btn btn-outline">Back to Polls</a>
             
@@ -138,7 +153,7 @@ Chart.register(...registerables);
                 [class]="poll.isActive ? 'btn-outline' : 'btn-accent'"
                 (click)="togglePollStatus()"
                 [disabled]="isToggling"
-              >
+              >f
                 {{ poll.isActive ? 'Close Poll' : 'Reopen Poll' }}
               </button>
               
@@ -377,6 +392,132 @@ Chart.register(...registerables);
         flex: 1 0 auto;
       }
     }
+
+    .result-voters {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .voter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0;
+      margin: 8px 0 0;
+      list-style: none;
+    }
+
+    .voter-item {
+      background-color: #f0f0f0;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .voter-name {
+      font-weight: 500;
+    }
+
+    .voter-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .voter-avatar {
+      width: 32px;
+      height: 32px;
+      background-color: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    .voter-initial {
+      text-transform: uppercase;
+      color : white;
+    }
+
+    .voter-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: white; 
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer; 
+      transition: transform 0.2s ease;
+    }
+
+    .voter-avatar:hover {
+      transform: scale(1.1); 
+    }
+
+    .voter-full-name {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .modal p {
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    
+    .btn-close {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .btn-close:hover {
+      background-color: #c82333;
+    }
   `]
 })
 export class PollDetailsComponent implements OnInit, OnDestroy {
@@ -393,7 +534,15 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   userVoteOption: PollOption | null = null;
   isCreator = false;
   chartInstance: Chart | null = null;
-  
+  selectedVoter: string | null = null; 
+
+  showFullName(voter: string): void {
+    this.selectedVoter = voter;
+  }
+  closeFullName(): void {
+    this.selectedVoter = null;
+  }
+
   private pollSub: Subscription | null = null;
   private userSub: Subscription | null = null;
   private route = inject(ActivatedRoute);
