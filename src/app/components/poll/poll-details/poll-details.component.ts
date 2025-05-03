@@ -119,14 +119,14 @@ Chart.register(...registerables);
                   </div>
                   <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
                   <div class="result-voters">
-                    <strong>Voters:</strong>
+                    <strong>Voters for option: {{ option.text }}</strong>
                     <div class="voter-grid">
-                        <div 
-                          *ngFor="let voter of option.voters; let index = index" 
-                          class="voter-avatar" 
-                          [title]="voter" 
-                          (click)="showFullName(voter)" 
-                        >
+                      <div 
+                        *ngFor="let voter of option.voters; let index = index" 
+                        class="voter-avatar" 
+                        [title]="voter" 
+                        (click)="showFullName(voter)" 
+                      >
                         <span class="voter-initial">{{ voter.charAt(0).toUpperCase() }}</span>
                       </div>
                     </div>
@@ -152,7 +152,7 @@ Chart.register(...registerables);
                 [class]="poll.isActive ? 'btn-outline' : 'btn-accent'"
                 (click)="togglePollStatus()"
                 [disabled]="isToggling"
-              >f
+              >
                 {{ poll.isActive ? 'Close Poll' : 'Reopen Poll' }}
               </button>
               
