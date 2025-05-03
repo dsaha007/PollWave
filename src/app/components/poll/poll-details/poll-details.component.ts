@@ -124,7 +124,6 @@ Chart.register(...registerables);
                         <div 
                           *ngFor="let voter of option.voters; let index = index" 
                           class="voter-avatar" 
-                          [style.background-color]="getBarColor(index)"
                           [title]="voter" 
                           (click)="showFullName(voter)" 
                         >
@@ -139,7 +138,7 @@ Chart.register(...registerables);
             
           <div *ngIf="selectedVoter" class="modal-overlay">
             <div class="modal">
-              <p>Voter: {{ selectedVoter }}</p>
+              <p>Voter Name: {{ selectedVoter }}</p>
               <button class="btn btn-close" (click)="closeFullName()">Close</button>
             </div>
           </div>
@@ -431,7 +430,7 @@ Chart.register(...registerables);
     .voter-avatar {
       width: 32px;
       height: 32px;
-      background-color: #f0f0f0;
+      background-color: #FFDEAD;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -445,7 +444,7 @@ Chart.register(...registerables);
 
     .voter-initial {
       text-transform: uppercase;
-      color : white;
+      color : black;
     }
 
     .voter-avatar {
