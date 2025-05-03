@@ -596,7 +596,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         if (poll) {
           this.isCreator = this.currentUser?.uid === poll.createdBy;
           this.checkUserVote();
-          this.fetchVotes(); // Fetch voter information
+          this.fetchVotes(); 
           setTimeout(() => {
             this.renderChart();
           }, 0);
