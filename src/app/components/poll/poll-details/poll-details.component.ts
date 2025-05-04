@@ -568,7 +568,6 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
             this.checkUserVote();
             this.fetchVotes();
 
-            // Render the chart after poll data is loaded
             setTimeout(() => {
               this.renderChart();
             }, 0);
@@ -648,11 +647,15 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
       next: (votes) => {
         this.poll?.options.forEach(option => {
           option.voters = votes
-            .filter(vote => vote.optionId === option.id)
-            .map(vote => vote.userDisplayName || 'Anonymous');
+              .filter(vote => vote.optionId === option.id)
+              .map(vote => vote.userDisplayName || 'Anonymous');
         });
       },
       error: (error) => {
+          if (error.code === 'permission-denied'){
+            this.errorMessage = 'You do not have permissions to access this information.';
+            return;
+          }
         console.error('Error fetching votes:', error);
       }
     });
@@ -670,18 +673,16 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     
     try {      
       await this.pollService.vote(this.pollId, this.selectedOptionId);      
-      this.successMessage = 'Your vote has been recorded!';
-      this.hasVoted = true;
-      await this.pollService.getPoll(this.pollId).subscribe((poll)=>{
-        this.poll = poll;
-        if(this.poll){
-          this.userVoteOption = this.poll.options.find(option => option.id === this.selectedOptionId) || null;
-        }
-
-
-
-        this.renderChart();
-      })
+      this.successMessage = 'Your vote has been recorded!';      
+      this.hasVoted = true;      
+      
+      
+      this.pollService.getPoll(this.pollId).subscribe((poll) => {
+          this.poll = poll;
+          this.fetchVotes();
+          this.userVoteOption = this.poll?.options.find(option => option.id === this.selectedOptionId) || null;
+          this.renderChart();
+      });
     } catch (error) {
       console.error('Error submitting vote:', error);
       this.errorMessage = error instanceof Error ? error.message : 'Failed to submit vote. Please try again.';
