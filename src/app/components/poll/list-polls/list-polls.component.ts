@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { PollService } from '../../../services/poll.service';
 import { AuthService } from '../../../services/auth.service';
 import { Poll } from '../../../models/poll.model';
-
 import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-list-polls',
   standalone: true,
@@ -203,81 +203,64 @@ import { Subscription } from 'rxjs';
   `]
 })
 export class ListPollsComponent implements OnInit, OnDestroy {
-  private pollsSubscriptions: Subscription[] = [];
+  private pollsSubscription: Subscription | undefined;
   isLoading = true;
   allPolls: Poll[] = [];
-  filteredPolls: Poll[] = []
+  filteredPolls: Poll[] = [];
   searchQuery = '';
   statusFilter = 'all';
-  
+
   private pollService = inject(PollService);
   private authService = inject(AuthService);
-  
+
   user$ = this.authService.user$;
-  
+
   ngOnInit(): void {
     this.loadAndSubscribePolls();
   }
-  
+
   ngOnDestroy(): void {
-    this.pollsSubscriptions.forEach(sub => sub.unsubscribe());
+    if (this.pollsSubscription) {
+      this.pollsSubscription.unsubscribe();
+    }
   }
 
-  
   private loadAndSubscribePolls(): void {
-    this.pollsSubscriptions.push(
-      this.pollService.getPolls().subscribe({
-        next: (initialPolls) => {
-          this.allPolls = initialPolls;
-          this.filteredPolls = [...this.allPolls];
-          this.isLoading = false;
-          initialPolls.forEach(poll => {
-            if(poll.id) return this.subscribeToPollUpdates(poll.id);
-          });
-        },
-        error: (error) => {
-          console.error('Error loading initial polls:', error);
-          this.isLoading = false;
-        }
-      })
-    );
-  }
-
-  private subscribeToPollUpdates(pollId: string): void {
-    const pollSub = this.pollService.listenToPoll(pollId).subscribe((updatedPoll) => {
-      if (updatedPoll) {
-        const index = this.allPolls.findIndex((p) => p.id === updatedPoll.id);
-        if (index !== -1) {
-          this.allPolls[index] = updatedPoll;
-        } else {
-          this.allPolls.push(updatedPoll);
-        }
+    this.isLoading = true;
+    this.pollsSubscription = this.pollService.latestPolls$.subscribe({
+      next: (updatedPolls: Poll[]) => {
+        this.allPolls = updatedPolls;
         this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error listening to poll updates:', error);
+        this.isLoading = false;
       }
     });
-    this.pollsSubscriptions.push(pollSub);
   }
+
   applyFilters(): void {
     let filtered = [...this.allPolls];
-    
+
     if (this.searchQuery?.trim()) {
       const query = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(poll => 
+      filtered = filtered.filter(poll =>
         poll.question.toLowerCase().includes(query)
       );
     }
-    
+
     if (this.statusFilter !== 'all') {
       const isActive = this.statusFilter === 'active';
       filtered = filtered.filter(poll => poll.isActive === isActive);
     }
-    
+
     this.filteredPolls = filtered;
   }
-  
+
   resetFilters(): void {
     this.searchQuery = '';
     this.statusFilter = 'all';
-    this.filteredPolls = [...this.allPolls];
+    this.applyFilters()
   }
 }

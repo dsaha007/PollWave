@@ -31,12 +31,16 @@ export class PollService {
   private authService = inject(AuthService);
   private latestPollsSubject = new BehaviorSubject<Poll[]>([]);
   latestPolls$ = this.latestPollsSubject.asObservable();
+  private userPollsSubject = new BehaviorSubject<Poll[]>([]);
+  userPolls$ = this.userPollsSubject.asObservable();
 
   constructor() {
     this.listenToLatestPolls();
+    const user = this.authService.getCurrentUser();
+    if (user) this.listenToUserPolls(user.uid);
   }
-
-  private listenToLatestPolls(): void {
+  
+  public listenToLatestPolls(): void {
     const pollsRef = collection(this.db, 'polls');
     const q = query(pollsRef, orderBy('createdAt', 'desc'), limit(10));
     
@@ -53,6 +57,24 @@ export class PollService {
       this.latestPollsSubject.next(polls);
     });
   }
+  
+  public listenToUserPolls(userId: string): void {
+    const q = query(collection(this.db, 'polls'), where('createdBy', '==', userId), orderBy('createdAt', 'desc'));
+
+    onSnapshot(q, (snapshot) => {
+      const polls: Poll[] = [];
+      snapshot.forEach(doc => {
+        const pollData = doc.data() as Poll;
+        polls.push({
+          ...pollData,
+          id: doc.id,
+          createdAt: (pollData.createdAt as any).toDate()
+        });
+      });
+      this.userPollsSubject.next(polls);
+    });
+  }
+
 
   async createPoll(question: string, options: string[]): Promise<string> {
     try {
@@ -279,7 +301,7 @@ export class PollService {
     }
   }
 
-  listenToPoll(pollId: string): Observable<Poll | null> {
+  public listenToPoll(pollId: string): Observable<Poll | null> {
     return new Observable((observer) => {
       const pollRef = doc(this.db, 'polls', pollId);
 

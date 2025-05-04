@@ -39,7 +39,7 @@ import { Poll } from '../../../models/poll.model';
         <div class="profile-content">
           <h2>Your Polls</h2>
           
-          @if (isLoading) {
+          @if (isLoading || !userPolls) {
             <div class="spinner"></div>
           } @else if (userPolls.length === 0) {
             <div class="no-polls">
@@ -49,7 +49,7 @@ import { Poll } from '../../../models/poll.model';
           } @else {
             <div class="user-polls-grid">
               @for (poll of userPolls; track poll.id) {
-                <div class="poll-card" [class.active-poll]="poll.isActive">
+                <div class="poll-card" [class.closed-poll]="!poll.isActive" [class.active-poll]="poll.isActive">
                   <h3>{{ poll.question }}</h3>
                   <div class="poll-meta">
                     <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -170,6 +170,10 @@ import { Poll } from '../../../models/poll.model';
       background-color: #e2fddf;
     }
 
+    .poll-card.closed-poll {
+      background-color: #ffe6e6;
+    }
+
     .poll-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
@@ -251,35 +255,27 @@ import { Poll } from '../../../models/poll.model';
 export class UserProfileComponent implements OnInit {
   user: any;
   isLoading = true;
-  userPolls: Poll[] = [];
+  userPolls: Poll[] | null = null;
   
   private authService = inject(AuthService);
   private pollService = inject(PollService);
 
   ngOnInit(): void {
     this.user = this.authService.getCurrentUser();
-    if (this.user && this.user.createdAt) {
-      this.user.memberSince = this.user.createdAt.toDate();
-      
-    }
     if (this.user) {
-      this.loadUserPolls();
+      this.user.memberSince = this.user.createdAt.toDate();
+      this.pollService.listenToUserPolls(this.user.uid);
+      this.pollService.userPolls$.subscribe({
+        next: (polls) => {
+          this.userPolls = polls;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading user polls:', error);
+          this.isLoading = false;
+        },
+      });
     }
-  }
-  
-  private loadUserPolls(): void {
-    if (!this.user) return;
-    
-    this.pollService.getUserPolls(this.user.uid).subscribe({
-      next: (polls) => {
-        this.userPolls = polls;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading user polls:', error);
-        this.isLoading = false;
-      }
-    });
   }
   
   getUserInitials(): string {
