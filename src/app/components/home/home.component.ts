@@ -54,9 +54,12 @@ import { Poll } from '../../models/poll.model';
                 <div class="poll-card" [class.closed-poll]="!poll.isActive" [class.active-poll]="poll.isActive">
                   <h3>{{ poll.question }}</h3>
                   <div class="poll-meta">
-                    <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
                     <span class="poll-status" [class.active]="poll.isActive">
                       {{ poll.isActive ? 'Active' : 'Closed' }}
+                    </span>
+                    <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
+                    <span class="poll-created">
+                      Created: {{ poll.createdAt | date:'mediumDate' }}
                     </span>
                   </div>
                   <a [routerLink]="['/polls', poll.id]" class="btn btn-outline">View Poll</a>
