@@ -209,9 +209,13 @@ import { Poll } from '../../models/poll.model';
     .poll-meta {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 10px; 
       margin-bottom: 20px;
       font-size: 0.9rem;
+      flex-wrap: wrap; 
     }
+
     
     .poll-status {
       padding: 3px 8px;
@@ -331,6 +335,13 @@ import { Poll } from '../../models/poll.model';
         font-size: 2rem;
       }
     }
+    @media (max-width: 600px) {
+      .poll-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
   `]
 })
 export class HomeComponent implements OnInit {

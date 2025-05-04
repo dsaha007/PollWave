@@ -69,7 +69,8 @@ import { Subscription } from 'rxjs';
                 </span>
               </div>
               <p class="poll-options">
-                <strong>Options:</strong> {{ poll.options.length }}
+                <span><strong>Options:</strong> {{ poll.options.length }}</span>
+                <span>Created: {{ poll.createdAt | date:'mediumDate' }}</span>
               </p>
               <div class="poll-actions">
                 <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
@@ -165,9 +166,13 @@ import { Subscription } from 'rxjs';
     }
     
     .poll-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 16px;
       font-size: 0.9rem;
     }
+
     
     .poll-actions {
       display: flex;
