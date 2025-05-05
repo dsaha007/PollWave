@@ -1,5 +1,5 @@
 export const environment = {
-  production: flase,
+  production: false,
   firebase: {
     apiKey: "AIzaSyDYwekl_jghtftmIxZR2O5co4xW3OQizzM",
     authDomain: "pollwave-f25ca.firebaseapp.com",
