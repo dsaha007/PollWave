@@ -76,7 +76,7 @@ export class PollService {
   }
 
 
-  async createPoll(question: string, options: string[]): Promise<string> {
+  async createPoll(question: string, options: string[], isAnonymous: boolean): Promise<string>  {
     try {
       const user = this.authService.getCurrentUser();
       if (!user) {
@@ -95,6 +95,7 @@ export class PollService {
         createdBy: user.uid,
         createdAt: new Date(),
         isActive: true,
+        isAnonymous, // Include the new field
         totalVotes: 0
       };
 
@@ -213,7 +214,15 @@ export class PollService {
       const updatedOptions = [...pollData.options];
       updatedOptions[optionIndex] = {
         ...updatedOptions[optionIndex],
-        votes: updatedOptions[optionIndex].votes + 1
+        votes: updatedOptions[optionIndex].votes + 1,
+        ...(pollData.isAnonymous
+          ? {} // Do not store voter details for anonymous polls
+          : {
+              voters: [
+                ...(updatedOptions[optionIndex].voters || []),
+                user.displayName || 'Anonymous'
+              ]
+            })
       };
       
       await updateDoc(pollRef, {

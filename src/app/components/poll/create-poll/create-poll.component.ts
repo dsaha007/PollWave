@@ -73,7 +73,20 @@ import { PollService } from '../../../services/poll.service';
           >
             + Add Another Option
           </button>
-          
+          <div class="form-group">
+            <label for="isAnonymous">Poll Type</label>
+            <div class="toggle-container">
+              <label>
+                <input 
+                  type="checkbox" 
+                  id="isAnonymous" 
+                  name="isAnonymous"
+                  [(ngModel)]="isAnonymous"
+                >
+                Anonymous Poll
+              </label>
+            </div>
+          </div>
           <div class="form-actions">
             <button 
               type="submit" 
@@ -183,6 +196,7 @@ import { PollService } from '../../../services/poll.service';
 export class CreatePollComponent {
   question = '';
   options: string[] = ['', ''];
+  isAnonymous = false; // New field for poll type
   errorMessage = '';
   isLoading = false;
   
@@ -222,7 +236,7 @@ export class CreatePollComponent {
     try {
       const validOptions = this.options.filter(option => option.trim());
       
-      const pollId = await this.pollService.createPoll(this.question, validOptions);
+      const pollId = await this.pollService.createPoll(this.question, validOptions, this.isAnonymous);
       this.router.navigate(['/polls', pollId]);
     } catch (error) {
       console.error('Error creating poll:', error);

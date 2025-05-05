@@ -118,14 +118,15 @@ Chart.register(...registerables);
                     <div class="result-percentage">{{ getPercentage(option) }}%</div>
                   </div>
                   <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
-                  <div class="result-voters">
+                  
+                  <div *ngIf="!poll.isAnonymous && option.voters?.length" class="result-voters">
                     <strong>Voters for option: {{ option.text }}</strong>
                     <div class="voter-grid">
                       <div 
-                        *ngFor="let voter of option.voters; let index = index" 
+                        *ngFor="let voter of option.voters" 
                         class="voter-avatar" 
                         [title]="voter" 
-                        (click)="showFullName(voter)" 
+                        (click)="showFullName(voter)"
                       >
                         <span class="voter-initial">{{ voter.charAt(0).toUpperCase() }}</span>
                       </div>
@@ -641,8 +642,18 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   }
   
   private fetchVotes(): void {
-    if (!this.pollId) return;
+    if (!this.pollId || !this.poll) return;
 
+    // Handle anonymous polls
+    if (this.poll.isAnonymous) {
+      this.poll.options.forEach(option => {
+        option.voters = []; // Clear voters for anonymous polls
+      });
+      this.renderChart(); // Ensure the chart updates for anonymous polls
+      return;
+    }
+
+    // Handle non-anonymous polls
     this.voteService.getPollVotes(this.pollId).subscribe({
       next: (votes) => {
         this.poll?.options.forEach(option => {
@@ -650,6 +661,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
               .filter(vote => vote.optionId === option.id)
               .map(vote => vote.userDisplayName || 'Anonymous');
         });
+        this.renderChart(); // Update the chart after fetching votes
       },
       error: (error) => {
           if (error.code === 'permission-denied'){
