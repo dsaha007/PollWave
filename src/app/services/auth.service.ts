@@ -7,7 +7,9 @@ import {
   signOut, 
   updateProfile, 
   User as FirebaseUser,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { Observable, BehaviorSubject, from, of } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
@@ -106,6 +108,36 @@ export class AuthService {
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Logout error:', error);
+      throw error;
+    }
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(this.auth, provider);
+      const user = result.user;
+
+      // Check if the user exists in Firestore, if not, create a new user
+      const userData: User = {
+        uid: user.uid,
+        email: user.email!,
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || '',
+        createdAt: new Date()
+      };
+
+      const userRef = doc(this.db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, userData);
+      }
+
+      this.userSubject.next(userData);
+      this.router.navigate(['/']);
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
       throw error;
     }
   }

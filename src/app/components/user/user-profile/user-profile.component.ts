@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { PollService } from '../../../services/poll.service';
 import { Poll } from '../../../models/poll.model';
+import { Timestamp } from 'firebase/firestore';
+
 
 @Component({
   selector: 'app-user-profile',

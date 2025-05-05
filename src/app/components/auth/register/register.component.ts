@@ -111,6 +111,16 @@ import { AuthService } from '../../../services/auth.service';
             }
           </button>
         </form>
+
+        <div class="divider">OR</div>
+
+        <button 
+          class="btn btn-google btn-block" 
+          (click)="signInWithGoogle()"
+          [disabled]="isLoading"
+        >
+          Sign up with Google
+        </button>
         
         <div class="auth-footer">
           <p>Already have an account? <a routerLink="/login">Log In</a></p>
@@ -187,6 +197,26 @@ import { AuthService } from '../../../services/auth.service';
       margin-top: 10px;
     }
     
+    .btn-google {
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-google:hover {
+      background-color: #357ae8;
+    }
+    
+    .divider {
+      text-align: center;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
     .auth-footer {
       margin-top: 24px;
       text-align: center;
@@ -228,6 +258,20 @@ export class RegisterComponent {
     } catch (error) {
       console.error('Registration error:', error);
       this.errorMessage = this.getErrorMessage(error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    try {
+      await this.authService.signInWithGoogle();
+    } catch (error) {
+      console.error('Google Sign-Up error:', error);
+      this.errorMessage = 'Failed to sign up with Google. Please try again.';
     } finally {
       this.isLoading = false;
     }
