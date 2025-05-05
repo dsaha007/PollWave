@@ -19,7 +19,7 @@ import { AuthService } from '../../../services/auth.service';
         
         <form (ngSubmit)="login(loginForm)" #loginForm="ngForm">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">Email <span class="required">*</span></label>
             <input 
               type="email" 
               id="email" 
@@ -37,7 +37,7 @@ import { AuthService } from '../../../services/auth.service';
           </div>
           
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">Password<span class="required">*</span></label>
             <input 
               type="password" 
               id="password" 
@@ -183,6 +183,10 @@ import { AuthService } from '../../../services/auth.service';
     
     .auth-footer a:hover {
       text-decoration: underline;
+    }
+    .required {
+      color: var(--danger-color);
+      font-weight: bold;
     }
   `]
 })
