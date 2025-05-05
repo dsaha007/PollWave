@@ -33,7 +33,7 @@ export class PollService {
   latestPolls$ = this.latestPollsSubject.asObservable();
   private userPollsSubject = new BehaviorSubject<Poll[]>([]);
   userPolls$ = this.userPollsSubject.asObservable();
-
+  
   constructor() {
     this.listenToLatestPolls();
     const user = this.authService.getCurrentUser();
@@ -76,7 +76,7 @@ export class PollService {
   }
 
 
-  async createPoll(question: string, options: string[], isAnonymous: boolean): Promise<string>  {
+  async createPoll(question: string, options: string[], isAnonymous: boolean, category: string, isCustomCategory: boolean): Promise<string>  {
     try {
       const user = this.authService.getCurrentUser();
       if (!user) {
@@ -95,7 +95,9 @@ export class PollService {
         createdBy: user.uid,
         createdAt: new Date(),
         isActive: true,
-        isAnonymous, // Include the new field
+        isAnonymous, 
+        category,
+        isCustomCategory,
         totalVotes: 0
       };
 
@@ -128,6 +130,29 @@ export class PollService {
     );
   }
 
+  getPollsByCategory(category: string): Observable<Poll[]> {
+    const pollsRef = collection(this.db, 'polls');
+    const q = query(pollsRef, where('category', '==', category), orderBy('createdAt', 'desc'));
+  
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        const polls: Poll[] = [];
+        snapshot.forEach(doc => {
+          const pollData = doc.data() as Poll;
+          polls.push({
+            ...pollData,
+            id: doc.id,
+            createdAt: (pollData.createdAt as any).toDate()
+          });
+        });
+        return polls;
+      }),
+      catchError(error => {
+        console.error('Error fetching polls by category:', error);
+        return of([]);
+      })
+    );
+  }
   getPolls(): Observable<Poll[]> {
     const pollsRef = collection(this.db, 'polls');
     const q = query(pollsRef, orderBy('createdAt', 'desc'));

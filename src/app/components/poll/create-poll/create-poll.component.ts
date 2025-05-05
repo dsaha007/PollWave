@@ -73,20 +73,76 @@ import { PollService } from '../../../services/poll.service';
           >
             + Add Another Option
           </button>
+
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select 
+              id="category" 
+              name="category" 
+              class="form-control" 
+              [(ngModel)]="category" 
+              (change)="onCategoryChange($event)"
+              required
+            >
+              <option value="" disabled>Select a category</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+              <option value="custom">+ Add New Category</option>
+            </select>
+          </div>
+          
+          <div *ngIf="isAddingCategory" class="form-group">
+            <label for="newCategory">New Category</label>
+            <input 
+              type="text" 
+              id="newCategory" 
+              class="form-control" 
+              [(ngModel)]="newCategory" 
+              name="newCategory" 
+              placeholder="Enter new category"
+            >
+            <button 
+              type="button" 
+              class="btn btn-accent" 
+              style="margin-top: 10px;"
+              (click)="addCategory()"
+            >
+              Add Category
+            </button>
+          </div>
+
+          <!-- <div *ngIf="isAddingCategory" class="form-group">
+            <label for="newCategory">New Category</label>
+            <input 
+              type="text" 
+              id="newCategory" 
+              class="form-control" 
+              [(ngModel)]="newCategory" 
+              name="newCategory" 
+              placeholder="Enter new category"
+              (blur)="saveCustomCategory()" 
+            >
+          </div> -->
+
           <div class="form-group">
             <label for="isAnonymous">Poll Type</label>
             <div class="toggle-container">
-              <label>
+              <label class="switch">
                 <input 
                   type="checkbox" 
                   id="isAnonymous" 
                   name="isAnonymous"
                   [(ngModel)]="isAnonymous"
                 >
-                Anonymous Poll
+                <span class="slider round"></span>
               </label>
+              <span class="toggle-label">{{ isAnonymous ? 'Anonymous Poll' : 'Non-Anonymous Poll' }}</span>
             </div>
           </div>
+          
+          <div *ngIf="categoryAddedMessage" class="alert alert-success">
+            {{ categoryAddedMessage }}
+          </div>
+
           <div class="form-actions">
             <button 
               type="submit" 
@@ -177,6 +233,58 @@ import { PollService } from '../../../services/poll.service';
       width: 48%;
     }
     
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      margin-right: 10px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: '';
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .toggle-label {
+      font-size: 0.9rem;
+      color: #333;
+      vertical-align: middle;
+    }
+
     @media (max-width: 576px) {
       .create-poll-container {
         padding: 20px;
@@ -196,9 +304,14 @@ import { PollService } from '../../../services/poll.service';
 export class CreatePollComponent {
   question = '';
   options: string[] = ['', ''];
-  isAnonymous = false; // New field for poll type
+  category = ''; 
+  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; 
+  isAnonymous = false; 
   errorMessage = '';
   isLoading = false;
+  isAddingCategory = false; 
+  isCustomCategory = false; 
+  newCategory = '';
   
   private pollService = inject(PollService);
   private router = inject(Router);
@@ -225,24 +338,94 @@ export class CreatePollComponent {
     return !this.options.some(option => !option.trim());
   }
   
+  onCategoryChange(event: Event): void {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    if (selectedValue === 'custom') {
+      this.isAddingCategory = true;
+    } else {
+      this.isAddingCategory = false;
+    }
+  }
+
+  categoryAddedMessage = ''; // Track the confirmation message
+
+  // saveCustomCategory(): void {
+  //   if (this.newCategory.trim()) {
+  //     const newCategory = this.newCategory.trim();
+  
+  //     
+  //     this.categories.push(newCategory);
+  //     this.category = newCategory;
+  
+  //     
+  //     this.isCustomCategory = true;
+  
+  //    
+  //     this.categoryAddedMessage = `Category "${newCategory}" has been added successfully!`;
+  
+  //     
+  //     this.newCategory = '';
+  //     this.isAddingCategory = false;
+  
+  //     /
+  //     setTimeout(() => {
+  //       this.categoryAddedMessage = '';
+  //     }, 3000);
+  //   } else {
+  //     alert('Please enter a category before leaving the field.');
+  //   }
+  // }
+
+  addCategory(): void {
+    if (this.newCategory.trim()) {
+      const newCategory = this.newCategory.trim();
+
+      this.categories.push(newCategory);
+      this.category = newCategory;
+  
+      this.isCustomCategory = true;
+  
+      this.categoryAddedMessage = `Category "${newCategory}" has been added successfully!`;
+  
+      this.newCategory = '';
+      this.isAddingCategory = false;
+  
+      setTimeout(() => {
+        this.categoryAddedMessage = '';
+      }, 3000);
+    } else {
+      alert('Please enter a category before adding it.');
+    }
+  }
+
   async createPoll(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
-    
+  
     this.isLoading = true;
     this.errorMessage = '';
-    
+  
     try {
       const validOptions = this.options.filter(option => option.trim());
-      
-      const pollId = await this.pollService.createPoll(this.question, validOptions, this.isAnonymous);
+  
+      const isCustomCategory = this.isCustomCategory;
+  
+      const pollId = await this.pollService.createPoll(
+        this.question,
+        validOptions,
+        this.isAnonymous,
+        this.category,
+        isCustomCategory
+      );
+  
       this.router.navigate(['/polls', pollId]);
     } catch (error) {
       console.error('Error creating poll:', error);
       this.errorMessage = 'Failed to create poll. Please try again.';
     } finally {
       this.isLoading = false;
+      this.isCustomCategory = false; // Reset the flag
     }
   }
   

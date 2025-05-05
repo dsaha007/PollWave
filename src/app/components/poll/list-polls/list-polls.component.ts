@@ -41,13 +41,37 @@ import { Subscription } from 'rxjs';
             <option value="closed">Closed Polls</option>
           </select>
         </div>
+
+        <div class="filter-category">
+          <select 
+            class="form-control" 
+            [(ngModel)]="categoryFilter" 
+            (change)="applyFilters()"
+          >
+            <option value="">All Categories</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+            <option value="custom">Custom Categories</option> 
+          </select>
+        </div>
+
+        <div class="filter-type">
+          <select 
+            class="form-control" 
+            [(ngModel)]="typeFilter" 
+            (change)="applyFilters()"
+          >
+            <option value="all">All Types</option>
+            <option value="anonymous">Anonymous Polls</option>
+            <option value="non-anonymous">Non-Anonymous Polls</option>
+          </select>
+        </div>
       </div>
       
       @if (isLoading) {
         <div class="spinner"></div>
       } @else if (filteredPolls.length === 0) {
         <div class="no-polls">
-          @if (searchQuery || statusFilter !== 'all') {
+          @if (searchQuery || statusFilter !== 'all' || categoryFilter || typeFilter !== 'all') {
             <p>No polls match your filters.</p>
             <button class="btn btn-outline" (click)="resetFilters()">Clear Filters</button>
           } @else {
@@ -59,25 +83,28 @@ import { Subscription } from 'rxjs';
         </div>
       } @else {
         <div class="polls-grid">
-          @for (poll of filteredPolls; track poll.id) {
+        @for (poll of filteredPolls; track poll.id) {
           <div class="poll-card" [class.active-poll]="poll.isActive" [class.closed-poll]="!poll.isActive">
-              <h3>{{ poll.question }}</h3>
-              <div class="poll-meta">
-                <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
-                <span class="poll-status" [class.active]="poll.isActive">
-                  {{ poll.isActive ? 'Active' : 'Closed' }}
-                </span>
-              </div>
-              <p class="poll-options">
-                <span><strong>Options:</strong> {{ poll.options.length }}</span>
-                <span>Created: {{ poll.createdAt | date:'mediumDate' }}</span>
-              </p>
-              <div class="poll-actions">
-                <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
-              </div>
+            <h3>{{ poll.question }}</h3>
+            <div class="poll-meta">
+              <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
+              <span class="poll-status" [class.active]="poll.isActive">
+                {{ poll.isActive ? 'Active' : 'Closed' }}
+              </span>
             </div>
-          }
-        </div>
+            <p class="poll-options">
+              <span>
+                <strong>Category:</strong> 
+                {{ poll.isCustomCategory ? poll.category : poll.category }}
+              </span>
+              <span>Created: {{ poll.createdAt | date:'mediumDate' }}</span>
+            </p>
+            <div class="poll-actions">
+              <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
+            </div>
+          </div>
+  }
+</div>
       }
     </div>
   `,
@@ -106,7 +133,7 @@ import { Subscription } from 'rxjs';
       flex: 1;
     }
     
-    .filter-status {
+    .filter-status, .filter-category, .filter-type {
       width: 200px;
     }
     
@@ -201,7 +228,7 @@ import { Subscription } from 'rxjs';
         gap: 12px;
       }
       
-      .filter-status {
+      .filter-status, .filter-category, .filter-type {
         width: 100%;
       }
     }
@@ -214,6 +241,9 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   filteredPolls: Poll[] = [];
   searchQuery = '';
   statusFilter = 'all';
+  categoryFilter = ''; // Category filter
+  typeFilter = 'all'; // New field for anonymous/non-anonymous filter
+  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; // Example categories
 
   private pollService = inject(PollService);
   private authService = inject(AuthService);
@@ -247,25 +277,42 @@ export class ListPollsComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     let filtered = [...this.allPolls];
-
+  
     if (this.searchQuery?.trim()) {
       const query = this.searchQuery.toLowerCase().trim();
       filtered = filtered.filter(poll =>
         poll.question.toLowerCase().includes(query)
       );
     }
-
+  
     if (this.statusFilter !== 'all') {
       const isActive = this.statusFilter === 'active';
       filtered = filtered.filter(poll => poll.isActive === isActive);
     }
-
+  
+    if (this.categoryFilter) {
+      if (this.categoryFilter === 'custom') {
+        // Show all polls with isCustomCategory set to true
+        filtered = filtered.filter(poll => poll.isCustomCategory);
+      } else {
+        // Filter polls by the selected category
+        filtered = filtered.filter(poll => poll.category === this.categoryFilter);
+      }
+    }
+  
+    if (this.typeFilter !== 'all') {
+      const isAnonymous = this.typeFilter === 'anonymous';
+      filtered = filtered.filter(poll => poll.isAnonymous === isAnonymous);
+    }
+  
     this.filteredPolls = filtered;
   }
 
   resetFilters(): void {
     this.searchQuery = '';
     this.statusFilter = 'all';
-    this.applyFilters()
+    this.categoryFilter = '';
+    this.typeFilter = 'all'; // Reset type filter
+    this.applyFilters();
   }
 }

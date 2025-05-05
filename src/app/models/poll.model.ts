@@ -2,7 +2,7 @@ export interface PollOption {
   id: string;
   text: string;
   votes: number;
-  voters?: string[]; // Only used for non-anonymous polls
+  voters?: string[]; 
 }
 
 export interface Poll {
@@ -12,6 +12,8 @@ export interface Poll {
   createdBy: string;
   createdAt: Date;
   isActive: boolean;
-  isAnonymous: boolean; // New field to indicate if the poll is anonymous
+  isAnonymous: boolean; 
+  category: string; 
   totalVotes?: number;
+  isCustomCategory: boolean;
 }

@@ -34,6 +34,10 @@ Chart.register(...registerables);
                 {{ poll.isActive ? 'Active' : 'Closed' }}
               </span>
             </div>
+            <div class="poll-category">
+              <strong>Category:</strong> 
+              {{ poll.category === 'None' ? 'No Category' : poll.category }}
+            </div>
           </div>
           
           @if (errorMessage) {
@@ -224,7 +228,13 @@ Chart.register(...registerables);
     .poll-content {
       margin-bottom: 30px;
     }
-    
+
+    .poll-category {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #555;
+    }
+        
     .voting-section {
       margin-bottom: 30px;
     }
