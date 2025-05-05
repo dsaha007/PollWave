@@ -265,7 +265,14 @@ export class UserProfileComponent implements OnInit {
   ngOnInit(): void {
     this.user = this.authService.getCurrentUser();
     if (this.user) {
-      this.user.memberSince = this.user.createdAt.toDate();
+      if (this.user.createdAt instanceof Timestamp) {
+        this.user.memberSince = this.user.createdAt.toDate();
+      } else if (this.user.createdAt instanceof Date) {
+        this.user.memberSince = this.user.createdAt;
+      } else {
+        this.user.memberSince = new Date(this.user.createdAt);
+      }
+
       this.pollService.listenToUserPolls(this.user.uid);
       this.pollService.userPolls$.subscribe({
         next: (polls) => {

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
@@ -13,13 +13,11 @@ import { AuthService } from '../../../services/auth.service';
       <div class="auth-card">
         <h2 class="auth-title">Log In to PollWave</h2>
         
-        @if (errorMessage) {
-          <div class="alert alert-danger">
-            {{ errorMessage }}
-          </div>
-        }
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
         
-        <form (ngSubmit)="login()" #loginForm="ngForm">
+        <form (ngSubmit)="login(loginForm)" #loginForm="ngForm">
           <div class="form-group">
             <label for="email">Email</label>
             <input 
@@ -33,11 +31,9 @@ import { AuthService } from '../../../services/auth.service';
               #emailInput="ngModel"
               [class.is-invalid]="emailInput.invalid && emailInput.touched"
             >
-            @if (emailInput.invalid && emailInput.touched) {
-              <div class="error-message">
-                Please enter a valid email address.
-              </div>
-            }
+            <div *ngIf="emailInput.invalid && emailInput.touched" class="error-message">
+              Email cannot be blank.
+            </div>
           </div>
           
           <div class="form-group">
@@ -53,11 +49,9 @@ import { AuthService } from '../../../services/auth.service';
               #passwordInput="ngModel"
               [class.is-invalid]="passwordInput.invalid && passwordInput.touched"
             >
-            @if (passwordInput.invalid && passwordInput.touched) {
-              <div class="error-message">
-                Password must be at least 6 characters.
-              </div>
-            }
+            <div *ngIf="passwordInput.invalid && passwordInput.touched" class="error-message">
+              Password cannot be blank.
+            </div>
           </div>
           
           <button 
@@ -65,11 +59,8 @@ import { AuthService } from '../../../services/auth.service';
             class="btn btn-primary btn-block" 
             [disabled]="loginForm.invalid || isLoading"
           >
-            @if (isLoading) {
-              <span>Logging in...</span>
-            } @else {
-              <span>Log In</span>
-            }
+            <span *ngIf="isLoading">Logging in...</span>
+            <span *ngIf="!isLoading">Log In</span>
           </button>
         </form>
 
@@ -203,8 +194,12 @@ export class LoginComponent {
   
   private authService = inject(AuthService);
   
-  async login(): Promise<void> {
-    if (!this.email || !this.password) {
+  async login(form: NgForm): Promise<void> {
+    if (form.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      form.controls['email']?.markAsTouched();
+      form.controls['password']?.markAsTouched();
+      this.errorMessage = 'Please fill in all required fields.';
       return;
     }
     
@@ -215,12 +210,12 @@ export class LoginComponent {
       await this.authService.login(this.email, this.password);
     } catch (error) {
       console.error('Login error:', error);
-      this.errorMessage = this.getErrorMessage(error);
+      this.errorMessage = 'Invalid email or password.';
     } finally {
       this.isLoading = false;
     }
   }
-  
+
   async signInWithGoogle(): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';
@@ -232,26 +227,6 @@ export class LoginComponent {
       this.errorMessage = 'Failed to sign in with Google. Please try again.';
     } finally {
       this.isLoading = false;
-    }
-  }
-  
-  private getErrorMessage(error: any): string {
-    const errorCode = error.code;
-    
-    switch (errorCode) {
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
-        return errorCode === 'auth/user-not-found'
-        ? 'User does not exist.'
-        : 'Invalid email or password.';
-      case 'auth/invalid-email':
-        return 'Please enter a valid email address.';
-      case 'auth/user-disabled':
-        return 'This account has been disabled.';
-      case 'auth/too-many-requests':
-        return 'Too many unsuccessful login attempts. Please try again later.';
-      default:
-        return 'Invalid email or password.';
     }
   }
 }
