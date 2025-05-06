@@ -136,7 +136,7 @@ Chart.register(...registerables);
 
           <div class="poll-actions">
             <a routerLink="/polls" class="btn btn-outline">Back to Polls</a>
-            
+            <button class="btn btn-outline" (click)="sharePoll()">Share Poll</button>
             @if (isCreator && poll) {
               <button 
                 class="btn" 
@@ -837,5 +837,24 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  sharePoll(): void {
+    if (!this.poll) return;
+  
+    const pollUrl = `${window.location.origin}/polls/${this.pollId}`;
+    const shareText = `Check out this poll: "${this.poll.question}"`;
+  
+    if (navigator.share) {
+      navigator.share({
+        title: 'PollWave',
+        text: shareText,
+        url: pollUrl,
+      }).catch((error) => console.error('Error sharing:', error));
+    } else {
+      navigator.clipboard.writeText(pollUrl).then(() => {
+        alert('Poll link copied to clipboard!');
+      }).catch((error) => console.error('Error copying link:', error));
+    }
   }
 }
