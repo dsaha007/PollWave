@@ -32,10 +32,11 @@ import { AuthService } from '../../../services/auth.service';
               [class.is-invalid]="emailInput.invalid && emailInput.touched"
             >
             <div *ngIf="emailInput.invalid && emailInput.touched" class="error-message">
-              Email cannot be blank.
+              <p *ngIf="emailInput.errors?.['required']">Email is required.</p>
+              <p *ngIf="emailInput.errors?.['email']">Invalid email format.</p>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="password">Password<span class="required">*</span></label>
             <input 
@@ -45,15 +46,14 @@ import { AuthService } from '../../../services/auth.service';
               class="form-control" 
               [(ngModel)]="password" 
               required
-              minlength="6"
               #passwordInput="ngModel"
               [class.is-invalid]="passwordInput.invalid && passwordInput.touched"
             >
             <div *ngIf="passwordInput.invalid && passwordInput.touched" class="error-message">
-              Password cannot be blank.
+              <p *ngIf="passwordInput.errors?.['required']">Password is required.</p>
             </div>
           </div>
-          
+
           <button 
             type="submit" 
             class="btn btn-primary btn-block" 
@@ -266,21 +266,19 @@ export class LoginComponent {
   
   async login(form: NgForm): Promise<void> {
     if (form.invalid) {
-      // Mark all fields as touched to trigger validation messages
       form.controls['email']?.markAsTouched();
       form.controls['password']?.markAsTouched();
       this.errorMessage = 'Please fill in all required fields.';
       return;
     }
-    
+  
     this.isLoading = true;
     this.errorMessage = '';
-    
+  
     try {
       await this.authService.login(this.email, this.password);
-    } catch (error) {
-      console.error('Login error:', error);
-      this.errorMessage = 'Invalid email or password.';
+    } catch (error: any) {
+      this.errorMessage = error.message; 
     } finally {
       this.isLoading = false;
     }

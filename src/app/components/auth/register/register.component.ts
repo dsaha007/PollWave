@@ -31,7 +31,8 @@ import { AuthService } from '../../../services/auth.service';
               [class.is-invalid]="displayNameInput.invalid && displayNameInput.touched"
             >
             <div *ngIf="displayNameInput.invalid && displayNameInput.touched" class="error-message">
-              Display name cannot be blank.
+              <p *ngIf="displayNameInput.errors?.['required']">Display name is required.</p>
+              <p *ngIf="displayNameInput.errors?.['minlength']">Display name must be at least 3 characters long.</p>
             </div>
           </div>
 
@@ -49,7 +50,8 @@ import { AuthService } from '../../../services/auth.service';
               [class.is-invalid]="emailInput.invalid && emailInput.touched"
             >
             <div *ngIf="emailInput.invalid && emailInput.touched" class="error-message">
-              Email cannot be blank.
+              <p *ngIf="emailInput.errors?.['required']">Email is required.</p>
+              <p *ngIf="emailInput.errors?.['email']">Invalid email format.</p>
             </div>
           </div>
 
@@ -67,7 +69,8 @@ import { AuthService } from '../../../services/auth.service';
               [class.is-invalid]="passwordInput.invalid && passwordInput.touched"
             >
             <div *ngIf="passwordInput.invalid && passwordInput.touched" class="error-message">
-              Password cannot be blank.
+              <p *ngIf="passwordInput.errors?.['required']">Password is required.</p>
+              <p *ngIf="passwordInput.errors?.['minlength']">Password must be at least 6 characters long.</p>
             </div>
           </div>
 
@@ -241,7 +244,7 @@ export class RegisterComponent {
       Object.keys(form.controls).forEach(key => {
         form.controls[key]?.markAsTouched();
       });
-
+  
       if (this.password !== this.confirmPassword) {
         this.errorMessage = 'Passwords do not match.';
       } else {
@@ -249,15 +252,14 @@ export class RegisterComponent {
       }
       return;
     }
-
+  
     this.isLoading = true;
     this.errorMessage = '';
-
+  
     try {
       await this.authService.registerUser(this.email, this.password, this.displayName);
-    } catch (error) {
-      console.error('Registration error:', error);
-      this.errorMessage = 'An error occurred during registration. Please try again.';
+    } catch (error: any) {
+      this.errorMessage = error.message; // Display specific error messages from AuthService
     } finally {
       this.isLoading = false;
     }

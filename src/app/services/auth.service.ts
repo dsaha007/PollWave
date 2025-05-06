@@ -79,12 +79,12 @@ export class AuthService {
 
   async registerUser(email: string, password: string, displayName: string): Promise<void> {
     try {
-      const hashedPassword = await hash(password, 10); // Hash the password
-  
       const credential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = credential.user;
   
       await updateProfile(user, { displayName });
+  
+      const hashedPassword = await hash(password, 10);
   
       const userData: User = {
         uid: user.uid,
@@ -92,16 +92,25 @@ export class AuthService {
         displayName: displayName,
         photoURL: user.photoURL || '',
         createdAt: new Date(),
-        password: hashedPassword // Store the hashed password
+        password: hashedPassword, 
       };
   
       await setDoc(doc(this.db, 'users', user.uid), userData);
   
       this.userSubject.next(userData);
       this.router.navigate(['/']);
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+    } catch (error: any) {
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          throw new Error('This email is already registered. Please log in.');
+        case 'auth/weak-password':
+          throw new Error('Password must be at least 6 characters long.');
+        case 'auth/invalid-email':
+          throw new Error('Invalid email format.');
+        default:
+          console.error('Registration error:', error);
+          throw new Error('An unexpected error occurred. Please try again.');
+      }
     }
   }
 
@@ -109,9 +118,16 @@ export class AuthService {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
       this.router.navigate(['/']);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (error: any) {
+      switch (error.code) {
+        case 'auth/invalid-credential':
+          throw new Error('Invalid credentials. Please check your email and password.');
+        case 'auth/invalid-email':
+          throw new Error('Invalid email format.');
+        default:
+          console.error('Login error:', error);
+          throw new Error('An unexpected error occurred. Please try again.');
+      }
     }
   }
 
