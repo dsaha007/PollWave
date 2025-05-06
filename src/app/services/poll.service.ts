@@ -13,9 +13,13 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  startAfter,
   serverTimestamp,
   arrayUnion,
-  increment
+  increment,
+  DocumentSnapshot,
+  DocumentData,
+  getCountFromServer
 } from 'firebase/firestore';
 import { Observable, from, of, BehaviorSubject } from 'rxjs';
 import { map, switchMap, tap, catchError } from 'rxjs/operators';
@@ -24,7 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthService } from './auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PollService {
   private db = getFirestore();
@@ -33,7 +37,53 @@ export class PollService {
   latestPolls$ = this.latestPollsSubject.asObservable();
   private userPollsSubject = new BehaviorSubject<Poll[]>([]);
   userPolls$ = this.userPollsSubject.asObservable();
+
+  /**
+   * Fetch paginated polls for a specific page
+   * @param pageSize Number of polls per page
+   * @param lastDoc Last document snapshot for pagination
+   * @returns Observable with polls and the last visible document
+   */
+  getPaginatedPolls(
+    pageSize: number,
+    lastDoc: DocumentSnapshot | null = null
+  ): Observable<{ polls: Poll[]; lastVisible: DocumentSnapshot | null }> {
+    const pollsRef = collection(this.db, 'polls');
+    let q = query(pollsRef, orderBy('createdAt', 'desc'), limit(pageSize));
   
+    if (lastDoc) {
+      q = query(pollsRef, orderBy('createdAt', 'desc'), startAfter(lastDoc), limit(pageSize));
+    }
+  
+    return from(getDocs(q)).pipe(
+      map((snapshot) => {
+        const polls: Poll[] = [];
+        snapshot.forEach((doc) => {
+          const pollData = doc.data() as Poll;
+          polls.push({
+            ...pollData,
+            id: doc.id,
+            createdAt: (pollData.createdAt as any).toDate(),
+          });
+        });
+  
+        const lastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
+        return { polls, lastVisible };
+      })
+    );
+  }
+
+  /**
+   * Fetch the total number of polls
+   * @returns Observable<number> Total poll count
+   */
+  getTotalPollCount(): Observable<number> {
+    const pollsRef = collection(this.db, 'polls');
+    return from(getCountFromServer(pollsRef)).pipe(
+      map((snapshot) => snapshot.data().count)
+    );
+  }
+
   constructor() {
     this.listenToLatestPolls();
     const user = this.authService.getCurrentUser();
@@ -402,3 +452,6 @@ export class PollService {
     });
   }
 }
+
+
+

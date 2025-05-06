@@ -66,7 +66,9 @@ import { Subscription } from 'rxjs';
           </select>
         </div>
       </div>
-      
+      <div *ngIf="filteredPolls.length === 0 && !isLoading" class="no-polls">
+        <p>No polls available for this page.</p>
+      </div>
       @if (isLoading) {
         <div class="spinner"></div>
       } @else if (filteredPolls.length === 0) {
@@ -103,7 +105,35 @@ import { Subscription } from 'rxjs';
               <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
             </div>
           </div>
-  }
+        }
+        </div>
+
+        <div class="pagination-controls">
+          <button
+            class="btn btn-outline"
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="currentPage === 1 || isLoading"
+          >
+            Previous
+          </button>
+
+          <button
+            *ngFor="let page of [].constructor(totalPages); let i = index"
+            class="btn btn-outline"
+            [class.active]="currentPage === i + 1"
+            (click)="goToPage(i + 1)"
+            [disabled]="isLoading"
+          >
+            {{ i + 1 }}
+          </button>
+
+          <button
+            class="btn btn-outline"
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="currentPage === totalPages || isLoading"
+          >
+            Next
+          </button>
         </div>
       }
     </div>
@@ -200,50 +230,43 @@ import { Subscription } from 'rxjs';
       font-size: 0.9rem;
     }
 
-    
-    .poll-actions {
+    .pagination-controls {
       display: flex;
       justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
     }
-    
-    .no-polls {
-      text-align: center;
-      padding: 40px 0;
+
+    .pagination-controls .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
     }
-    
-    .no-polls p {
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-    }
-    
-    @media (max-width: 768px) {
-      .poll-list-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-      
-      .filter-controls {
-        flex-direction: column;
-        gap: 12px;
-      }
-      
-      .filter-status, .filter-category, .filter-type {
-        width: 100%;
-      }
+
+    .pagination-controls .btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: bold;
     }
   `]
 })
 export class ListPollsComponent implements OnInit, OnDestroy {
+  lastVisible: any; 
   private pollsSubscription: Subscription | undefined;
-  isLoading = true;
+  isLoading = false;
   allPolls: Poll[] = [];
   filteredPolls: Poll[] = [];
   searchQuery = '';
   statusFilter = 'all';
-  categoryFilter = ''; 
-  typeFilter = 'all'; 
-  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; 
+  categoryFilter = '';
+  typeFilter = 'all';
+  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment'];
+
+  pageSize = 2; // Number of polls per page
+  currentPage = 1; // Current page number
+  totalPolls = 0; // Total number of polls
+  totalPages = 0; // Total number of pages
 
   private pollService = inject(PollService);
   private authService = inject(AuthService);
@@ -251,7 +274,8 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   user$ = this.authService.user$;
 
   ngOnInit(): void {
-    this.loadAndSubscribePolls();
+    this.fetchTotalPollCount();
+    this.loadPolls();
   }
 
   ngOnDestroy(): void {
@@ -260,49 +284,78 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadAndSubscribePolls(): void {
-    this.isLoading = true;
-    this.pollsSubscription = this.pollService.latestPolls$.subscribe({
-      next: (updatedPolls: Poll[]) => {
-        this.allPolls = updatedPolls;
-        this.applyFilters();
-        this.isLoading = false;
+  fetchTotalPollCount(): void {
+    this.pollService.getTotalPollCount().subscribe({
+      next: (count) => {
+        this.totalPolls = count;
+        this.totalPages = Math.ceil(this.totalPolls / this.pageSize);
       },
-      error: (error: any) => {
-        console.error('Error listening to poll updates:', error);
-        this.isLoading = false;
-      }
+      error: (error) => {
+        console.error('Error fetching total poll count:', error);
+      },
     });
+  }
+
+  loadPolls(): void {
+    this.isLoading = true;
+  
+    this.pollService
+      .getPaginatedPolls(this.pageSize, this.lastVisible)
+      .subscribe({
+        next: ({ polls, lastVisible }) => {
+          this.allPolls = polls;
+          this.lastVisible = lastVisible; 
+          this.applyFilters();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error fetching paginated polls:', error);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) {
+      return;
+    }
+    this.currentPage = page;
+  
+    if (page === 1) {
+      this.lastVisible = null;
+    }
+  
+    this.loadPolls();
   }
 
   applyFilters(): void {
     let filtered = [...this.allPolls];
-  
+
     if (this.searchQuery?.trim()) {
       const query = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(poll =>
+      filtered = filtered.filter((poll) =>
         poll.question.toLowerCase().includes(query)
       );
     }
-  
+
     if (this.statusFilter !== 'all') {
       const isActive = this.statusFilter === 'active';
-      filtered = filtered.filter(poll => poll.isActive === isActive);
+      filtered = filtered.filter((poll) => poll.isActive === isActive);
     }
-  
+
     if (this.categoryFilter) {
       if (this.categoryFilter === 'custom') {
-        filtered = filtered.filter(poll => poll.isCustomCategory);
+        filtered = filtered.filter((poll) => poll.isCustomCategory);
       } else {
-        filtered = filtered.filter(poll => poll.category === this.categoryFilter);
+        filtered = filtered.filter((poll) => poll.category === this.categoryFilter);
       }
     }
-  
+
     if (this.typeFilter !== 'all') {
       const isAnonymous = this.typeFilter === 'anonymous';
-      filtered = filtered.filter(poll => poll.isAnonymous === isAnonymous);
+      filtered = filtered.filter((poll) => poll.isAnonymous === isAnonymous);
     }
-  
+
     this.filteredPolls = filtered;
   }
 
@@ -310,7 +363,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.statusFilter = 'all';
     this.categoryFilter = '';
-    this.typeFilter = 'all'; 
+    this.typeFilter = 'all';
     this.applyFilters();
   }
 }
