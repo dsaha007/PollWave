@@ -53,35 +53,21 @@ Chart.register(...registerables);
           }
           
           <div class="poll-content">
-            <div class="voting-section" *ngIf="poll.isActive && !hasVoted && currentUser">
-              <h2>Cast Your Vote</h2>
-              <div class="options-list">
-                @for (option of poll.options; track option.id) {
-                  <div 
-                    class="option-item" 
-                    [class.selected]="selectedOptionId === option.id"
-                    (click)="selectOption(option.id)"
-                  >
-                    <span class="option-text">{{ option.text }}</span>
-                    <span class="option-check" *ngIf="selectedOptionId === option.id">✓</span>
-                  </div>
-                }
-              </div>
-              
-              <div class="voting-actions">
-                <button 
-                  class="btn btn-accent" 
-                  [disabled]="!selectedOptionId || isVoting" 
-                  (click)="submitVote()"
+          <div class="voting-section" *ngIf="poll.isActive && !hasVoted && currentUser">
+            <h2>Cast Your Vote</h2>
+            <div class="options-list">
+              @for (option of poll.options; track option.id) {
+                <div 
+                  class="option-item" 
+                  [class.selected]="selectedOptionId === option.id"
+                  (click)="submitVote(option.id)" 
                 >
-                  @if (isVoting) {
-                    <span>Submitting...</span>
-                  } @else {
-                    <span>Submit Vote</span>
-                  }
-                </button>
-              </div>
+                  <span class="option-text">{{ option.text }}</span>
+                  <span class="option-check" *ngIf="selectedOptionId === option.id">✓</span>
+                </div>
+              }
             </div>
+          </div>
             
             @if (!poll.isActive) {
               <div class="poll-closed-banner">
@@ -261,17 +247,17 @@ Chart.register(...registerables);
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .option-item:hover {
       border-color: var(--primary-color);
       background-color: rgba(0, 51, 102, 0.05);
     }
-    
+
     .option-item.selected {
       border-color: var(--primary-color);
       background-color: rgba(0, 51, 102, 0.1);
     }
-    
+
     .option-check {
       color: var(--primary-color);
       font-weight: bold;
@@ -687,23 +673,26 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     this.selectedOptionId = optionId;
   }
   
-  async submitVote(): Promise<void> {
-    if (!this.pollId || !this.selectedOptionId || !this.currentUser) return;
-    
+  async submitVote(optionId: string): Promise<void> {
+    if (!this.pollId || !optionId || !this.currentUser) return;
+  
     this.isVoting = true;
     this.errorMessage = '';
-    
-    try {      
-      await this.pollService.vote(this.pollId, this.selectedOptionId);      
-      this.successMessage = 'Your vote has been recorded!';      
-      this.hasVoted = true;      
-      
-      
+  
+    try {
+      await this.pollService.vote(this.pollId, optionId); // Register the vote
+      this.successMessage = 'Your vote has been recorded!';
+      this.hasVoted = true;
+  
+      // Update the UI to reflect the vote
+      this.selectedOptionId = optionId;
+      this.userVoteOption = this.poll?.options.find(option => option.id === optionId) || null;
+  
+      // Fetch updated poll data
       this.pollService.getPoll(this.pollId).subscribe((poll) => {
-          this.poll = poll;
-          this.fetchVotes();
-          this.userVoteOption = this.poll?.options.find(option => option.id === this.selectedOptionId) || null;
-          this.renderChart();
+        this.poll = poll;
+        this.fetchVotes();
+        this.renderChart();
       });
     } catch (error) {
       console.error('Error submitting vote:', error);
