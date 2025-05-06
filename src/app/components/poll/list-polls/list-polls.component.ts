@@ -66,9 +66,7 @@ import { Subscription } from 'rxjs';
           </select>
         </div>
       </div>
-      <div *ngIf="filteredPolls.length === 0 && !isLoading" class="no-polls">
-        <p>No polls available for this page.</p>
-      </div>
+
       @if (isLoading) {
         <div class="spinner"></div>
       } @else if (filteredPolls.length === 0) {
@@ -263,7 +261,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   typeFilter = 'all';
   categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment'];
 
-  pageSize = 2; // Number of polls per page
+  pageSize = 10; // Number of polls per page
   currentPage = 1; // Current page number
   totalPolls = 0; // Total number of polls
   totalPages = 0; // Total number of pages
