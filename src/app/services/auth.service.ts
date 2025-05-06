@@ -148,7 +148,6 @@ export class AuthService {
       const result = await signInWithPopup(this.auth, provider);
       const user = result.user;
 
-      // Check if the user exists in Firestore, if not, create a new user
       const userData: User = {
         uid: user.uid,
         email: user.email!,

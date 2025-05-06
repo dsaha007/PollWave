@@ -75,10 +75,9 @@ export class PollService {
     });
   }
 
-  async getMostPopularPolls(limitCount: number = 5): Promise<Poll[]> {
+  async getMostPopularPolls(limitCount: number = 6): Promise<Poll[]> {
     const pollsRef = collection(this.db, 'polls');
-    const q = query(pollsRef, orderBy('totalVotes', 'desc')); // Sort by total votes
-  
+    const q = query(pollsRef, orderBy('totalVotes', 'desc')); 
     const querySnapshot = await getDocs(q);
   
     return querySnapshot.docs
@@ -86,23 +85,23 @@ export class PollService {
         id: doc.id,
         ...doc.data()
       } as Poll))
-      .filter(poll => (poll.totalVotes ?? 0) > 0) // Exclude polls with zero votes
-      .slice(0, limitCount); // Limit to top N polls
+      .filter(poll => (poll.totalVotes ?? 0) > 0) 
+      .slice(0, limitCount); 
   }
 
-  public listenToMostPopularPolls(limitCount: number = 5): Observable<Poll[]> {
+  public listenToMostPopularPolls(limitCount: number = 6): Observable<Poll[]> {
     return new Observable((observer) => {
       const pollsRef = collection(this.db, 'polls');
       const q = query(
         pollsRef,
-        orderBy('totalVotes', 'desc') // Sort by total votes
+        orderBy('totalVotes', 'desc') 
       );
   
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const polls: Poll[] = [];
         snapshot.forEach((doc) => {
           const pollData = doc.data() as Poll;
-          if ((pollData.totalVotes ?? 0) > 0) { // Exclude polls with zero votes
+          if ((pollData.totalVotes ?? 0) > 0) { 
             polls.push({
               ...pollData,
               id: doc.id,
@@ -110,7 +109,7 @@ export class PollService {
             });
           }
         });
-        observer.next(polls.slice(0, limitCount)); // Limit to top N polls
+        observer.next(polls.slice(0, limitCount)); 
       }, (error) => {
         console.error('Error listening to popular polls:', error);
         observer.error(error);
@@ -285,7 +284,7 @@ export class PollService {
         ...updatedOptions[optionIndex],
         votes: updatedOptions[optionIndex].votes + 1,
         ...(pollData.isAnonymous
-          ? {} // Do not store voter details for anonymous polls
+          ? {} 
           : {
               voters: [
                 ...(updatedOptions[optionIndex].voters || []),

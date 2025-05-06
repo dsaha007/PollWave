@@ -240,7 +240,6 @@ export class RegisterComponent {
 
   async register(form: NgForm): Promise<void> {
     if (form.invalid || this.password !== this.confirmPassword) {
-      // Mark all controls as touched to show validation errors
       Object.keys(form.controls).forEach(key => {
         form.controls[key]?.markAsTouched();
       });
@@ -259,7 +258,7 @@ export class RegisterComponent {
     try {
       await this.authService.registerUser(this.email, this.password, this.displayName);
     } catch (error: any) {
-      this.errorMessage = error.message; // Display specific error messages from AuthService
+      this.errorMessage = error.message;  
     } finally {
       this.isLoading = false;
     }

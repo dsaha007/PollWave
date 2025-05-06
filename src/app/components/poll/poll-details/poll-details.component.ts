@@ -640,16 +640,14 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   private fetchVotes(): void {
     if (!this.pollId || !this.poll) return;
 
-    // Handle anonymous polls
     if (this.poll.isAnonymous) {
       this.poll.options.forEach(option => {
-        option.voters = []; // Clear voters for anonymous polls
+        option.voters = []; 
       });
-      this.renderChart(); // Ensure the chart updates for anonymous polls
+      this.renderChart();
       return;
     }
 
-    // Handle non-anonymous polls
     this.voteService.getPollVotes(this.pollId).subscribe({
       next: (votes) => {
         this.poll?.options.forEach(option => {
@@ -657,7 +655,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
               .filter(vote => vote.optionId === option.id)
               .map(vote => vote.userDisplayName || 'Anonymous');
         });
-        this.renderChart(); // Update the chart after fetching votes
+        this.renderChart(); 
       },
       error: (error) => {
           if (error.code === 'permission-denied'){
@@ -680,15 +678,13 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   
     try {
-      await this.pollService.vote(this.pollId, optionId); // Register the vote
+      await this.pollService.vote(this.pollId, optionId); 
       this.successMessage = 'Your vote has been recorded!';
       this.hasVoted = true;
   
-      // Update the UI to reflect the vote
       this.selectedOptionId = optionId;
       this.userVoteOption = this.poll?.options.find(option => option.id === optionId) || null;
   
-      // Fetch updated poll data
       this.pollService.getPoll(this.pollId).subscribe((poll) => {
         this.poll = poll;
         this.fetchVotes();

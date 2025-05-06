@@ -241,9 +241,9 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   filteredPolls: Poll[] = [];
   searchQuery = '';
   statusFilter = 'all';
-  categoryFilter = ''; // Category filter
-  typeFilter = 'all'; // New field for anonymous/non-anonymous filter
-  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; // Example categories
+  categoryFilter = ''; 
+  typeFilter = 'all'; 
+  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; 
 
   private pollService = inject(PollService);
   private authService = inject(AuthService);
@@ -292,10 +292,8 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   
     if (this.categoryFilter) {
       if (this.categoryFilter === 'custom') {
-        // Show all polls with isCustomCategory set to true
         filtered = filtered.filter(poll => poll.isCustomCategory);
       } else {
-        // Filter polls by the selected category
         filtered = filtered.filter(poll => poll.category === this.categoryFilter);
       }
     }
@@ -312,7 +310,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.statusFilter = 'all';
     this.categoryFilter = '';
-    this.typeFilter = 'all'; // Reset type filter
+    this.typeFilter = 'all'; 
     this.applyFilters();
   }
 }

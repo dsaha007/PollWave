@@ -347,7 +347,7 @@ export class CreatePollComponent {
     }
   }
 
-  categoryAddedMessage = ''; // Track the confirmation message
+  categoryAddedMessage = ''; 
 
   // saveCustomCategory(): void {
   //   if (this.newCategory.trim()) {
@@ -425,7 +425,7 @@ export class CreatePollComponent {
       this.errorMessage = 'Failed to create poll. Please try again.';
     } finally {
       this.isLoading = false;
-      this.isCustomCategory = false; // Reset the flag
+      this.isCustomCategory = false; 
     }
   }
   

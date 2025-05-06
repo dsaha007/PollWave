@@ -366,7 +366,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.pollSubscription = this.pollService.listenToMostPopularPolls(5).subscribe({
       next: (polls: Poll[]) => {
-        this.popularPolls = polls; // Dynamically update the popular polls
+        this.popularPolls = polls; 
         this.isLoading = false;
       },
       error: (error) => {
