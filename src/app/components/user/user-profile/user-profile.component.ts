@@ -51,7 +51,7 @@ import { Timestamp } from 'firebase/firestore';
           } @else {
             <div class="user-polls-grid">
               @for (poll of userPolls; track poll.id) {
-                <div class="poll-card" [class.closed-poll]="!poll.isActive" [class.active-poll]="poll.isActive">
+                <div class="poll-card" [class.active-poll]="poll.isActive" [class.closed-poll]="!poll.isActive">
                   <h3>{{ poll.question }}</h3>
                   <div class="poll-meta">
                     <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
@@ -59,8 +59,12 @@ import { Timestamp } from 'firebase/firestore';
                       {{ poll.isActive ? 'Active' : 'Closed' }}
                     </span>
                   </div>
-                  <p class="poll-created">
-                    Created: {{ poll.createdAt | date:'mediumDate' }}
+                  <p class="poll-options">
+                    <span>
+                      <strong>Category:</strong> 
+                      {{ poll.isCustomCategory ? poll.category : poll.category }}
+                    </span>
+                    <span>Created: {{ poll.createdAt | date:'mediumDate' }}</span>
                   </p>
                   <div class="poll-actions">
                     <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">Manage Poll</a>
@@ -156,15 +160,16 @@ import { Timestamp } from 'firebase/firestore';
     
     .user-polls-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 24px;
+      margin-bottom: 40px;
     }
     
     .poll-card {
-      background-color: #f9f9f9;
+      background-color: #FFFFFF;
       border-radius: var(--border-radius);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+      box-shadow: var(--box-shadow);
+      padding: 24px;
       transition: var(--transition);
     }
     
@@ -208,10 +213,12 @@ import { Timestamp } from 'firebase/firestore';
       color: white;
     }
     
-    .poll-created {
+    .poll-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
       font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 15px;
     }
     
     .poll-actions {
