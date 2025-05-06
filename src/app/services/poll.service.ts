@@ -75,6 +75,50 @@ export class PollService {
     });
   }
 
+  async getMostPopularPolls(limitCount: number = 5): Promise<Poll[]> {
+    const pollsRef = collection(this.db, 'polls');
+    const q = query(pollsRef, orderBy('totalVotes', 'desc')); // Sort by total votes
+  
+    const querySnapshot = await getDocs(q);
+  
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Poll))
+      .filter(poll => (poll.totalVotes ?? 0) > 0) // Exclude polls with zero votes
+      .slice(0, limitCount); // Limit to top N polls
+  }
+
+  public listenToMostPopularPolls(limitCount: number = 5): Observable<Poll[]> {
+    return new Observable((observer) => {
+      const pollsRef = collection(this.db, 'polls');
+      const q = query(
+        pollsRef,
+        orderBy('totalVotes', 'desc') // Sort by total votes
+      );
+  
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const polls: Poll[] = [];
+        snapshot.forEach((doc) => {
+          const pollData = doc.data() as Poll;
+          if ((pollData.totalVotes ?? 0) > 0) { // Exclude polls with zero votes
+            polls.push({
+              ...pollData,
+              id: doc.id,
+              createdAt: (pollData.createdAt as any).toDate(),
+            });
+          }
+        });
+        observer.next(polls.slice(0, limitCount)); // Limit to top N polls
+      }, (error) => {
+        console.error('Error listening to popular polls:', error);
+        observer.error(error);
+      });
+  
+      return () => unsubscribe();
+    });
+  }
 
   async createPoll(question: string, options: string[], isAnonymous: boolean, category: string, isCustomCategory: boolean): Promise<string>  {
     try {

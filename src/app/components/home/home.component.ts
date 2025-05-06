@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -34,43 +35,42 @@ import { Poll } from '../../models/poll.model';
       
       <section class="featured-polls">
         <div class="container">
-          <h2>Latest Polls</h2>
+          <h2>Popular Polls</h2>
           
-          @if (isLoading) {
-            <div class="spinner"></div>
-          } @else if (latestPolls.length === 0) {
-            <div class="no-polls">
-              <p>No polls available yet.</p>
-              @if (user$ | async) {
-                <a routerLink="/polls/create" class="btn btn-accent">Create the First Poll</a>
-              } @else {
-                <p>Sign up to create the first poll!</p>
-                <a routerLink="/register" class="btn btn-accent">Sign Up Now</a>
-              }
+          <div *ngIf="isLoading" class="spinner"></div>
+          <div *ngIf="!isLoading && popularPolls.length === 0" class="no-polls">
+            <p>No popular polls available yet.</p>
+          </div>
+
+
+          <div class="polls-grid">
+            <div 
+              *ngFor="let poll of popularPolls" 
+              class="poll-card" 
+              [class.active-poll]="poll.isActive" 
+              [class.closed-poll]="!poll.isActive"
+            >
+              <h3>{{ poll.question }}</h3>
+              <div class="poll-meta">
+                <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
+                <span class="poll-status" [class.active]="poll.isActive">
+                  {{ poll.isActive ? 'Active' : 'Closed' }}
+                </span>
+              </div>
+              <p class="poll-options">
+                <span>
+                  <strong>Category:</strong> 
+                  {{ poll.isCustomCategory ? poll.category : poll.category }}
+                </span>
+                <span>Created: {{ poll.createdAt | date:'mediumDate' }}</span>
+              </p>
+              <div class="poll-actions">
+                <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Poll</a>
+              </div>
             </div>
-          } @else {
-            <div class="polls-grid">
-              @for (poll of latestPolls; track poll.id) {
-                <div class="poll-card" [class.closed-poll]="!poll.isActive" [class.active-poll]="poll.isActive">
-                  <h3>{{ poll.question }}</h3>
-                  <div class="poll-meta">
-                    <span class="poll-status" [class.active]="poll.isActive">
-                      {{ poll.isActive ? 'Active' : 'Closed' }}
-                    </span>
-                    <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
-                    <span class="poll-created">
-                      Created: {{ poll.createdAt | date:'mediumDate' }}
-                    </span>
-                  </div>
-                  <a [routerLink]="['/polls', poll.id]" class="btn btn-outline">View Poll</a>
-                </div>
-              }
-            </div>
-            
-            <div class="text-center">
-              <a routerLink="/polls" class="btn btn-primary">View All Polls</a>
-            </div>
-          }
+          </div>
+
+          
         </div>
       </section>
       
@@ -209,14 +209,15 @@ import { Poll } from '../../models/poll.model';
     .poll-meta {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 10px; 
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       font-size: 0.9rem;
-      flex-wrap: wrap; 
     }
 
-    
+    .poll-actions {
+      display: flex;
+      justify-content: center;
+    }
+
     .poll-status {
       padding: 3px 8px;
       border-radius: 12px;
@@ -230,6 +231,14 @@ import { Poll } from '../../models/poll.model';
       color: white;
     }
     
+    .poll-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+
     .no-polls {
       text-align: center;
       padding: 40px 0;
@@ -344,9 +353,10 @@ import { Poll } from '../../models/poll.model';
 
   `]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  popularPolls: Poll[] = [];
   isLoading = true;
-  latestPolls: Poll[] = [];
+  private pollSubscription: Subscription | undefined;
   
   private authService = inject(AuthService);
   private pollService = inject(PollService);
@@ -354,19 +364,21 @@ export class HomeComponent implements OnInit {
   user$ = this.authService.user$;
   
   ngOnInit(): void {
-    this.loadLatestPolls();
-  }
-  
-  private loadLatestPolls(): void {
-    this.pollService.latestPolls$.subscribe({
-      next: (polls) => {
-        this.latestPolls = polls;
+    this.pollSubscription = this.pollService.listenToMostPopularPolls(5).subscribe({
+      next: (polls: Poll[]) => {
+        this.popularPolls = polls; // Dynamically update the popular polls
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading latest polls:', error);
+        console.error('Error fetching popular polls:', error);
         this.isLoading = false;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollSubscription) {
+      this.pollSubscription.unsubscribe();
+    }
   }
 }

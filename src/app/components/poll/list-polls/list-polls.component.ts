@@ -104,7 +104,7 @@ import { Subscription } from 'rxjs';
             </div>
           </div>
   }
-</div>
+        </div>
       }
     </div>
   `,
