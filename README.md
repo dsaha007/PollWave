@@ -1,4 +1,3 @@
-
 ![header](./src/assets/github-header-image.png)
 
 # PollWave
@@ -22,6 +21,109 @@ PollWave is a dynamic web application built with Angular that allows users to cr
 - **Shared Components:** Header, footer, and back-to-top button are implemented as shared components.  
 - **Services:** The application is built using multiple services, including auth, poll, and vote services.  
 - **Models:** Poll, user, and vote data are represented by models.
+
+---
+
+## Workflow
+
+Below is the step-by-step workflow of the PollWave application:
+
+### 1. **Home Page**
+   - When users visit the application, they are greeted with a **Home Page** that introduces the platform.
+   - The page highlights the features of PollWave and provides **Call-to-Action (CTA)** buttons for:
+     - **Sign Up** (for new users).
+     - **Log In** (for existing users).
+     - **Create Poll** (if logged in).
+     - **Browse Polls** (to explore available polls).
+
+---
+
+### 2. **User Authentication**
+   - **Register:**
+     - New users can create an account by providing their **Display Name**, **Email**, and **Password**.
+     - Passwords must meet the minimum length requirement (6 characters).
+     - Users can also sign up using **Google Authentication**.
+   - **Login:**
+     - Existing users can log in using their **Email** and **Password**.
+     - Users can also log in using **Google Authentication**.
+     - Forgot Password functionality is available to reset the password via email.
+
+---
+
+### 3. **User Profile**
+   - After logging in, users can access their **Profile Page**.
+   - The profile displays:
+     - **User Information** (Display Name, Email, Profile Picture, and Member Since date).
+     - **List of Polls Created by the User**:
+       - Users can view, manage, or delete their polls.
+   - Users can log out from the profile page.
+
+---
+
+### 4. **Create a Poll**
+   - Logged-in users can create a new poll by navigating to the **Create Poll** page.
+   - Steps to create a poll:
+     1. Enter the **Poll Question**.
+     2. Add at least two **Answer Options** (more options can be added).
+     3. Select a **Category** from predefined categories or create a **Custom Category**.
+     4. Choose the **Poll Type**:
+        - **Anonymous Poll**: Voters remain anonymous.
+        - **Non-Anonymous Poll**: Voters' names are displayed.
+     5. Submit the poll to make it live.
+
+---
+
+### 5. **Browse Polls**
+   - Users can explore all available polls on the **Browse Polls** page.
+   - Features:
+     - **Search**: Search polls by question text.
+     - **Filters**:
+       - Filter by **Status** (Active or Closed).
+       - Filter by **Category** (Predefined or Custom).
+       - Filter by **Type** (Anonymous or Non-Anonymous).
+     - **Pagination**: Navigate through polls with pagination controls.
+   - Users can click on a poll to view its details and participate.
+
+---
+
+### 6. **Poll Details**
+   - The **Poll Details** page displays:
+     - **Poll Question** and **Options**.
+     - **Category**, **Status** (Active/Closed), and **Total Votes**.
+     - **Voting Section**:
+       - Logged-in users can cast their vote if the poll is active.
+       - Users can only vote once per poll.
+     - **Results Section**:
+       - Real-time results are displayed as a bar chart.
+       - For non-anonymous polls, the list of voters for each option is shown.
+   - **Poll Management** (for poll creators):
+     - **Close/Reopen Poll**: Toggle the poll's active status.
+     - **Delete Poll**: Permanently delete the poll.
+
+---
+
+### 7. **Voting**
+   - Registered users can vote on active polls.
+   - Once a vote is cast:
+     - The user's choice is recorded in the database.
+     - The results are updated in real-time.
+     - Users cannot vote again on the same poll.
+
+---
+
+### 8. **Real-Time Updates**
+   - Poll results are updated in real-time using Firebase Firestore's **onSnapshot** feature.
+   - Users can see live updates as votes are cast.
+
+---
+
+### 9. **Responsive Design**
+   - The application is fully responsive and works seamlessly across devices:
+     - Desktop
+     - Tablet
+     - Mobile
+
+---
 
 ## Installation Guide
 
