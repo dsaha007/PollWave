@@ -76,7 +76,31 @@ import { AuthService } from '../../../services/auth.service';
         
         <div class="auth-footer">
           <p>Don't have an account? <a routerLink="/register">Register</a></p>
+          <p><a (click)="openForgotPasswordModal()" class="forgot-password-link">Forgot Password?</a></p>
         </div>
+
+
+        <div *ngIf="isForgotPasswordModalOpen" class="modal">
+          <div class="modal-content">
+            <span class="close" (click)="closeForgotPasswordModal()">&times;</span>
+            <h2>Reset Password</h2>
+            <form (ngSubmit)="resetPassword()" #resetForm="ngForm">
+              <div class="form-group">
+                <label for="resetEmail">Email</label>
+                <input 
+                  type="email" 
+                  id="resetEmail" 
+                  name="resetEmail"
+                  class="form-control" 
+                  [(ngModel)]="resetEmail" 
+                  required
+                  email
+                >
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Send Reset Link</button>
+            </form>
+          </div>
+
       </div>
     </div>
   `,
@@ -188,6 +212,46 @@ import { AuthService } from '../../../services/auth.service';
       color: var(--danger-color);
       font-weight: bold;
     }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .modal-content .form-group {
+      margin-bottom: 15px;
+    }
+
+    .modal-content .btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .forgot-password-link {
+      cursor: pointer;
+    }
   `]
 })
 export class LoginComponent {
@@ -195,6 +259,8 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
   isLoading = false;
+  isForgotPasswordModalOpen = false;
+  resetEmail = '';
   
   private authService = inject(AuthService);
   
@@ -229,6 +295,33 @@ export class LoginComponent {
     } catch (error) {
       console.error('Google Sign-In error:', error);
       this.errorMessage = 'Failed to sign in with Google. Please try again.';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  openForgotPasswordModal(): void {
+    this.isForgotPasswordModalOpen = true;
+  }
+
+  closeForgotPasswordModal(): void {
+    this.isForgotPasswordModalOpen = false;
+  }
+
+  async resetPassword(): Promise<void> {
+    if (!this.resetEmail) {
+      this.errorMessage = 'Please enter your email.';
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      await this.authService.forgotPassword(this.resetEmail);
+      alert('Password reset email sent. Please check your inbox.');
+      this.closeForgotPasswordModal();
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      this.errorMessage = 'Failed to send password reset email. Please try again.';
     } finally {
       this.isLoading = false;
     }

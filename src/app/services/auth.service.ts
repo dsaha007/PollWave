@@ -9,8 +9,10 @@ import {
   User as FirebaseUser,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail
 } from 'firebase/auth';
+import { hash } from 'bcryptjs'; 
 import { Observable, BehaviorSubject, from, of } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
@@ -50,6 +52,15 @@ export class AuthService {
     });
   }
 
+  async forgotPassword(email: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(this.auth, email);
+      console.log('Password reset email sent successfully');
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      throw error;
+    }
+  }
   private async getUserData(uid: string): Promise<User | null> {
     try {
       const userRef = doc(this.db, 'users', uid);
@@ -68,21 +79,24 @@ export class AuthService {
 
   async registerUser(email: string, password: string, displayName: string): Promise<void> {
     try {
+      const hashedPassword = await hash(password, 10); // Hash the password
+  
       const credential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = credential.user;
-      
+  
       await updateProfile(user, { displayName });
-      
+  
       const userData: User = {
         uid: user.uid,
         email: user.email!,
         displayName: displayName,
         photoURL: user.photoURL || '',
-        createdAt: new Date()
+        createdAt: new Date(),
+        password: hashedPassword // Store the hashed password
       };
-      
+  
       await setDoc(doc(this.db, 'users', user.uid), userData);
-      
+  
       this.userSubject.next(userData);
       this.router.navigate(['/']);
     } catch (error) {

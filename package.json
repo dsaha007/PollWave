@@ -15,6 +15,7 @@
     "@angular/forms": "^19.2.0",
     "@angular/platform-browser": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "bcryptjs": "^3.0.2",
     "chart.js": "^4.4.2",
     "firebase": "^10.10.0",
     "ng2-charts": "^6.0.0",

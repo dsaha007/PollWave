@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-
 @Component({
   selector: 'app-register',
   standalone: true,
