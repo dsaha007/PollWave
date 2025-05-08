@@ -32,7 +32,7 @@ import { Component } from '@angular/core';
         </div>
         <div class="footer-bottom">
           <p>&copy; {{ currentYear }} PollWave. All rights reserved.</p>
-          <p>Created by Debayan Saha and Sumit Roy</p>
+          <p>&copy; Created by Debayan Saha and Team</p>
         </div>
       </div>
     </footer>
