@@ -48,11 +48,11 @@ import { User } from '../../models/user.model';
     </div>
   `,
   styles: [`
-    .banned { color: var(--danger-color); font-weight: bold; }
-    .table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-    th { background: #f5f5f5; }
-  `]
+  .banned { color: var(--danger-color); font-weight: bold; }
+  .table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  th { background: #f5f5f5; }
+`]
 })
 export class AdminUsersComponent implements OnInit {
   private adminUserService = inject(AdminUserService);

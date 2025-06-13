@@ -18,7 +18,7 @@ Chart.register(...registerables);
   template: `
     <div class="container">
       @if (isLoading) {
-        <div class="spinner"></div>
+        <div class="global-spinner"></div>
       } @else if (!poll) {
         <div class="poll-not-found">
           <h2>Poll Not Found</h2>
@@ -167,82 +167,46 @@ Chart.register(...registerables);
       }
     </div>
   `,
-  styles: [`
-    .voter-list {
-      display: flex;
-      list-style-type: none; 
-      padding: 0;
-      margin: 0; 
-    }
-
-    .inline-block {
-        margin-right: 10px; 
-    }
-
+  styles : [`
     .poll-details-container {
       max-width: 800px;
       margin: 40px auto;
-      background-color: #FFFFFF;
+      background: #fff;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       padding: 30px;
     }
-    
     .poll-header {
       margin-bottom: 20px;
       border-bottom: 1px solid #eee;
       padding-bottom: 20px;
     }
-    
     .poll-header h1 {
       color: var(--primary-color);
       font-size: 1.8rem;
       margin-bottom: 16px;
     }
-    
-    .poll-meta {
-      display: flex;
-      gap: 16px;
-    }
-    
+    .poll-meta { display: flex; gap: 16px; }
     .poll-status {
       padding: 3px 10px;
       border-radius: 12px;
       font-weight: 500;
-      background-color: #ccc;
+      background: #ccc;
       color: #333;
     }
-    
     .poll-status.active {
-      background-color: var(--success-color);
-      color: white;
+      background: var(--success-color);
+      color: #fff;
     }
-    
-    .poll-content {
-      margin-bottom: 30px;
-    }
-
-    .poll-category {
-      margin-top: 10px;
-      font-size: 1rem;
-      color: #555;
-    }
-        
-    .voting-section {
-      margin-bottom: 30px;
-    }
-    
-    .voting-section h2,
-    .results-section h2 {
+    .poll-content { margin-bottom: 30px; }
+    .poll-category { margin-top: 10px; font-size: 1rem; color: #555; }
+    .voting-section { margin-bottom: 30px; }
+    .voting-section h2, .results-section h2 {
       font-size: 1.4rem;
       color: var(--primary-color);
       margin-bottom: 16px;
     }
-    
-    .options-list {
-      margin-bottom: 20px;
-    }
-    
+    .options-list { margin-bottom: 20px; }
     .option-item {
       padding: 12px 16px;
       border: 2px solid #ddd;
@@ -254,64 +218,32 @@ Chart.register(...registerables);
       align-items: center;
       transition: all 0.2s ease;
     }
-
-    .option-item:hover {
+    .option-item:hover, .option-item.selected {
       border-color: var(--primary-color);
-      background-color: rgba(0, 51, 102, 0.05);
+      background: rgba(0, 51, 102, 0.1);
     }
-
-    .option-item.selected {
-      border-color: var(--primary-color);
-      background-color: rgba(0, 51, 102, 0.1);
-    }
-
-    .option-check {
-      color: var(--primary-color);
-      font-weight: bold;
-    }
-    
-    .voting-actions {
-      display: flex;
-      justify-content: center;
-    }
-    
-    .chart-container {
-      height: 300px;
-      margin-bottom: 30px;
-    }
-    
-    .results-table {
-      margin-bottom: 20px;
-    }
-    
-    .result-row {
-      margin-bottom: 12px;
-    }
-    
-    .result-text {
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    
+    .option-check { color: var(--primary-color); font-weight: bold; }
+    .chart-container { height: 300px; margin-bottom: 30px; }
+    .results-table { margin-bottom: 20px; }
+    .result-row { margin-bottom: 12px; }
+    .result-text { margin-bottom: 5px; font-weight: 500; }
     .result-bar-container {
       display: flex;
       align-items: center;
-      background-color: #f0f0f0;
+      background: #f0f0f0;
       border-radius: 4px;
       height: 24px;
       position: relative;
       overflow: hidden;
       margin-bottom: 5px;
     }
-    
     .result-bar {
       height: 100%;
       min-width: 20px;
-      background-color: var(--primary-color);
+      background: var(--primary-color);
       border-radius: 4px;
-      transition: width 0.5s ease-out;
+      transition: width 0.5s;
     }
-    
     .result-percentage {
       position: absolute;
       right: 10px;
@@ -319,209 +251,49 @@ Chart.register(...registerables);
       font-weight: 500;
       font-size: 0.9rem;
     }
-    
-    .result-votes {
-      font-size: 0.9rem;
-      color: #666;
-    }
-    
-    .poll-closed-banner,
-    .login-to-vote,
-    .already-voted {
-      background-color: #f8f9fa;
+    .result-votes { font-size: 0.9rem; color: #666; }
+    .poll-closed-banner, .login-to-vote, .already-voted {
+      background: #f8f9fa;
       border-radius: var(--border-radius);
       padding: 16px;
       margin-bottom: 24px;
       text-align: center;
     }
-    
-    .poll-closed-banner {
-      border-left: 4px solid #dc3545;
-    }
-    
-    .login-to-vote {
-      border-left: 4px solid var(--primary-color);
-    }
-    
-    .already-voted {
-      border-left: 4px solid var(--accent-color);
-    }
-    
+    .poll-closed-banner { border-left: 4px solid #dc3545; }
+    .login-to-vote { border-left: 4px solid var(--primary-color); }
+    .already-voted { border-left: 4px solid var(--accent-color); }
     .poll-actions {
       display: flex;
       justify-content: space-between;
       border-top: 1px solid #eee;
       padding-top: 20px;
     }
-    
-    .danger {
-      color: var(--danger-color);
-      border-color: var(--danger-color);
-    }
-    
-    .danger:hover {
-      background-color: var(--danger-color);
-      color: white;
-    }
-    
-    .poll-not-found {
-      text-align: center;
-      padding: 60px 0;
-    }
-    
-    .poll-not-found h2 {
-      font-size: 2rem;
-      color: var(--primary-color);
-      margin-bottom: 16px;
-    }
-    
-    .poll-not-found p {
-      font-size: 1.1rem;
-      margin-bottom: 24px;
-      color: #666;
-    }
-    
+    .danger { color: var(--danger-color); border-color: var(--danger-color); }
+    .danger:hover { background: var(--danger-color); color: #fff; }
+    .poll-not-found { text-align: center; padding: 60px 0; }
+    .poll-not-found h2 { font-size: 2rem; color: var(--primary-color); margin-bottom: 16px; }
+    .poll-not-found p { font-size: 1.1rem; margin-bottom: 24px; color: #666; }
     @media (max-width: 768px) {
-      .poll-details-container {
-        padding: 20px;
-      }
-      
-      .poll-actions {
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-      
-      .poll-actions .btn {
-        flex: 1 0 auto;
-      }
+      .poll-details-container { padding: 20px; }
+      .poll-actions { flex-wrap: wrap; gap: 10px; }
+      .poll-actions .btn { flex: 1 0 auto; }
     }
-
-    .result-voters {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #555;
-    }
-
-    .voter-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 0;
-      margin: 8px 0 0;
-      list-style: none;
-    }
-
-    .voter-item {
-      background-color: #f0f0f0;
-      border-radius: 12px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      color: #333;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .voter-name {
-      font-weight: 500;
-    }
-
-    .voter-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
+    .result-voters { margin-top: 10px; font-size: 0.9rem; color: #555; }
+    .voter-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .voter-avatar {
-      width: 32px;
-      height: 32px;
-      background-color: #FFDEAD;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: #333;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+      width: 32px; height: 32px; background: #FFDEAD; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: bold; color: #333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;
     }
-
-    .voter-initial {
-      text-transform: uppercase;
-      color : black;
-    }
-
-    .voter-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: white; 
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      cursor: pointer; 
-      transition: transform 0.2s ease;
-    }
-
-    .voter-avatar:hover {
-      transform: scale(1.1); 
-    }
-
-    .voter-full-name {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    
-    .modal {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-    }
-    
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    
-    .btn-close:hover {
-      background-color: #c82333;
-    }
-
+    .voter-avatar:hover { transform: scale(1.1); }
+    .voter-initial { text-transform: uppercase; color: black; }
     .options-list.grid-options,
     .results-table.grid-options {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
     }
-
     @media (min-width: 600px) {
       .options-list.grid-options,
       .results-table.grid-options {
@@ -540,13 +312,11 @@ Chart.register(...registerables);
         grid-template-columns: repeat(4, 1fr);
       }
     }
-
     .option-item,
     .result-row {
       width: 100%;
       margin-bottom: 0;
-    }
-  `]
+    }`]
 })
 export class PollDetailsComponent implements OnInit, OnDestroy {
   pollId: string | null = null;

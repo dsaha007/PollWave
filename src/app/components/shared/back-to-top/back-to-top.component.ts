@@ -32,14 +32,12 @@ import { CommonModule } from '@angular/common';
       font-size: 1.5rem;
       align-items:center;
     }
-
     .arrow-image{
       width: 100%;
       height: 100%;
     }
-
     .back-to-top-button:hover {
-      opacity: 6;
+      opacity: 1;
     }
   `]
 })

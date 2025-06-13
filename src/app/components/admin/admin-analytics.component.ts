@@ -16,7 +16,7 @@ Chart.register(...registerables);
     <div class="container">
       <div class="card">
         <h2>Poll Analytics</h2>
-        <div *ngIf="isLoading" class="spinner"></div>
+        <div *ngIf="isLoading" class="global-spinner"></div>
         <div *ngIf="!isLoading">
           <div class="analytics-grid">
             <div class="analytics-card">
@@ -69,9 +69,7 @@ Chart.register(...registerables);
       font-weight: bold;
       color: var(--accent-color);
     }
-    .chart-section {
-      margin-top: 40px;
-    }
+    .chart-section { margin-top: 40px; }
   `]
 })
 export class AdminAnalyticsComponent implements OnInit, OnDestroy {

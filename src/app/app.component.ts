@@ -43,26 +43,6 @@ import { CommonModule } from '@angular/common';
     .main-content {
       flex: 1;
     }
-    .global-spinner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-    }
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 5px solid #eee;
-      border-top: 5px solid #EC6408;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
-    }
   `]
 })
 export class AppComponent {

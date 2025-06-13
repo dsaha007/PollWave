@@ -44,45 +44,37 @@ import { Component } from '@angular/core';
       padding: 40px 0 20px;
       margin-top: 40px;
     }
-    
     .footer-content {
       display: flex;
       justify-content: space-between;
       margin-bottom: 30px;
     }
-    
     .footer-logo h2 {
       font-size: 24px;
       margin: 0 0 10px;
     }
-    
     .footer-logo p {
       font-size: 14px;
       opacity: 0.8;
       max-width: 300px;
     }
-    
     .footer-links {
       display: flex;
       gap: 60px;
     }
-    
     .footer-col h3 {
       font-size: 16px;
       margin: 0 0 15px;
       color: var(--accent-color);
     }
-    
     .footer-col ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    
     .footer-col li {
       margin-bottom: 8px;
     }
-    
     .footer-col a {
       color: var(--light-text);
       text-decoration: none;
@@ -90,12 +82,10 @@ import { Component } from '@angular/core';
       opacity: 0.8;
       transition: opacity 0.3s ease;
     }
-    
     .footer-col a:hover {
       opacity: 1;
       text-decoration: underline;
     }
-    
     .footer-bottom {
       padding-top: 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -103,26 +93,13 @@ import { Component } from '@angular/core';
       font-size: 14px;
       opacity: 0.7;
     }
-    
     @media (max-width: 768px) {
-      .footer-content {
-        flex-direction: column;
-      }
-      
-      .footer-logo {
-        margin-bottom: 30px;
-      }
-      
-      .footer-links {
-        gap: 30px;
-      }
+      .footer-content { flex-direction: column; }
+      .footer-logo { margin-bottom: 30px; }
+      .footer-links { gap: 30px; }
     }
-    
     @media (max-width: 480px) {
-      .footer-links {
-        flex-direction: column;
-        gap: 20px;
-      }
+      .footer-links { flex-direction: column; gap: 20px; }
     }
   `]
 })

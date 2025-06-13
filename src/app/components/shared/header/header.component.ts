@@ -102,54 +102,45 @@ import { User } from '../../../models/user.model';
       z-index: 100;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-    
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
     .logo-container {
-        display: flex;
-        align-items: center;
+      display: flex;
+      align-items: center;
     }
-    
-    .logo-container a{
+    .logo-container a {
       display: flex;
       align-items: center;
       text-decoration: none;
       color: var(--light-text);
     }
-
     .logo h1 {
-        font-size: 24px;
-        font-weight: 700;
-        margin: 0;
-        color: var(--light-text);
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--light-text);
     }
-    
     .logo h1 span {
-        font-size: inherit;
-        display: flex;
-        align-items: center;
+      font-size: inherit;
+      display: flex;
+      align-items: center;
     }
-
     .logo img {
-        width: 40px;
-        margin-right: 10px;
+      width: 40px;
+      margin-right: 10px;
     }
-
     .nav-list {
       display: flex;
       list-style: none;
       margin: 0;
       padding: 0;
     }
-    
     .nav-list li {
       margin-left: 24px;
     }
-    
     .nav-list a {
       color: var(--light-text);
       text-decoration: none;
@@ -158,12 +149,10 @@ import { User } from '../../../models/user.model';
       transition: color 0.3s ease;
       position: relative;
     }
-    
     .nav-list a:hover,
     .nav-list a.active {
       color: var(--accent-color);
     }
-    
     .nav-list a::after {
       content: '';
       position: absolute;
@@ -174,12 +163,10 @@ import { User } from '../../../models/user.model';
       background-color: var(--accent-color);
       transition: width 0.3s ease;
     }
-    
     .nav-list a:hover::after,
     .nav-list a.active::after {
       width: 100%;
     }
-    
     .mobile-menu-toggle {
       display: none;
       flex-direction: column;
@@ -188,7 +175,6 @@ import { User } from '../../../models/user.model';
       height: 21px;
       cursor: pointer;
     }
-    
     .mobile-menu-toggle span {
       display: block;
       height: 3px;
@@ -197,22 +183,18 @@ import { User } from '../../../models/user.model';
       border-radius: 3px;
       transition: all 0.3s ease;
     }
-    
     .mobile-menu {
       padding: 16px 0;
       background-color: var(--primary-color);
     }
-    
     .mobile-nav-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    
     .mobile-nav-list li {
       margin-bottom: 12px;
     }
-    
     .mobile-nav-list a {
       color: var(--light-text);
       text-decoration: none;
@@ -220,36 +202,10 @@ import { User } from '../../../models/user.model';
       display: block;
       padding: 8px 0;
     }
-    
     .mobile-nav-list a:hover,
     .mobile-nav-list a.active {
       color: var(--accent-color);
     }
-    
-    .admin-dropdown, .dropdown-menu {
-      display: none !important;
-    }
-    @media (max-width: 768px) {
-      .nav {
-        display: none;
-      }
-      
-      .mobile-menu-toggle {
-        display: flex;
-      }
-      .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: transparent;
-        min-width: 0;
-        padding: 0;
-      }
-      .dropdown-menu a {
-        padding: 10px 16px;
-      }
-    }
-
-        /* Desktop dropdown */
     .admin-dropdown {
       position: relative;
     }
@@ -301,7 +257,6 @@ import { User } from '../../../models/user.model';
       background: var(--accent-color);
       color: #fff;
     }
-    
     .mobile-admin-label {
       font-weight: bold;
       color: var(--accent-color);
@@ -334,6 +289,8 @@ import { User } from '../../../models/user.model';
       to { opacity: 1; transform: translateY(0);}
     }
     @media (max-width: 768px) {
+      .nav { display: none; }
+      .mobile-menu-toggle { display: flex; }
       .admin-dropdown { display: none !important; }
     }
     @media (min-width: 769px) {

@@ -70,7 +70,7 @@ import { Subscription } from 'rxjs';
       </div>
 
       @if (isLoading) {
-        <div class="spinner"></div>
+        <div class="global-spinner"></div>
       } @else if (filteredPolls.length === 0) {
         <div class="no-polls">
           @if (searchQuery || statusFilter !== 'all' || categoryFilter || typeFilter !== 'all') {
@@ -161,170 +161,115 @@ import { Subscription } from 'rxjs';
 }
     
   `,
-  styles: [`
-    .poll-list-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 40px 0 30px;
-    }
-    
-    .poll-list-header h1 {
-      color: var(--primary-color);
-      font-size: 2rem;
-      margin: 0;
-    }
-    
-    .filter-controls {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .search-box {
-      flex: 1;
-    }
-    
-    .filter-status, .filter-category, .filter-type {
-      width: 200px;
-    }
-    
-    .polls-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-    
-    .poll-card {
-      background-color: #FFFFFF;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 24px;
-      transition: var(--transition);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    
-    .poll-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .poll-card.closed-poll {
-      background-color: #ffe6e6; /* Light red */
-    }
-
-    .poll-card.active-poll {
-        background-color: #e0ffe0;
+  styles : [`
+      .poll-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 40px 0 30px;
       }
-    
-    .poll-card h3 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: var(--primary-color);
-    }
-    
-    .poll-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-    }
-    
-    .poll-status {
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-weight: 500;
-      background-color: #ccc;
-      color: #333;
-    }
-    
-    .poll-status.active {
-      background-color: var(--success-color);
-      color: white;
-    }
-    
-    .poll-options {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      font-size: 0.9rem;
-    }
-
-    .poll-actions{
-      display: flex;
-      justify-content: space-between;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .pagination-controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .pagination-controls .btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .pagination-controls .btn.active {
-      background-color: var(--primary-color);
-      color: white;
-      font-weight: bold;
-    }
-
-    .polls-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-
-    @media (max-width: 900px) {
+      .poll-list-header h1 {
+        color: var(--primary-color);
+        font-size: 2rem;
+        margin: 0;
+      }
+      .filter-controls {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .search-box { flex: 1; }
+      .filter-status, .filter-category, .filter-type { width: 200px; }
       .polls-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
       }
-      .filter-controls {
+      .poll-card {
+        background: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 24px;
+        transition: var(--transition);
+        display: flex;
         flex-direction: column;
-        gap: 12px;
+        justify-content: space-between;
       }
-    }
-
-      
-    @media (min-width: 600px) {
-      .poll-actions {
-        flex-direction: row;
+      .poll-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      }
+      .poll-card.closed-poll { background: #ffe6e6; }
+      .poll-card.active-poll { background: #e0ffe0; }
+      .poll-card h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--primary-color);
+      }
+      .poll-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+      }
+      .poll-status {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+        background: #ccc;
+        color: #333;
+      }
+      .poll-status.active { background: var(--success-color); color: #fff; }
+      .poll-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+      }
+      .poll-actions{
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
         gap: 10px;
+        margin-top: 16px;
       }
-    }
-
-    @media (max-width: 600px) {
-      .filter-controls {
-        overflow-x: auto;
-        flex-wrap: nowrap;
+      .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
       }
-    }
-
-
-
-@media (max-width: 500px) {
-  .modal-content {
-    padding: 18px 6px 12px 6px;
-    max-width: 98vw;
-  }
-}
+      .pagination-controls .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pagination-controls .btn.active {
+        background: var(--primary-color);
+        color: #fff;
+        font-weight: bold;
+      }
+      @media (max-width: 900px) {
+        .polls-grid { grid-template-columns: 1fr; gap: 16px; }
+        .filter-controls { flex-direction: column; gap: 12px; }
+      }
+      @media (min-width: 600px) {
+        .poll-actions { flex-direction: row; gap: 10px; }
+      }
+      @media (max-width: 600px) {
+        .filter-controls { overflow-x: auto; flex-wrap: nowrap; }
+      }
+      @media (max-width: 500px) {
+        .modal-content {
+          padding: 18px 6px 12px 6px;
+          max-width: 98vw;
+        }
+      }  
   `]
 })
 export class ListPollsComponent implements OnInit, OnDestroy {

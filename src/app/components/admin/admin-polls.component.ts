@@ -16,7 +16,7 @@ import { Report } from '../../models/report.model';
     <div class="container">
       <div class="card">
         <h2>Manage Polls</h2>
-        <div *ngIf="isLoading" class="spinner"></div>
+        <div *ngIf="isLoading" class="global-spinner"></div>
         <div class="table-responsive">
             <table class="table" *ngIf="!isLoading">
             <thead>
@@ -104,7 +104,6 @@ import { Report } from '../../models/report.model';
       gap: 10px;
       align-items: center;
     }
-    
     .action-buttons .btn {
       min-width: 100px;
       height: 40px;

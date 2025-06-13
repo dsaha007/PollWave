@@ -42,7 +42,7 @@ import { Timestamp } from 'firebase/firestore';
           <h2>Your Polls</h2>
           
           @if (isLoading || !userPolls) {
-            <div class="spinner"></div>
+            <div class="global-spinner"></div>
           } @else if (userPolls.length === 0) {
             <div class="no-polls">
               <p>You haven't created any polls yet.</p>
@@ -82,74 +82,62 @@ import { Timestamp } from 'firebase/firestore';
       max-width: 900px;
       margin: 40px auto;
     }
-    
     .profile-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #FFFFFF;
+      background: #fff;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       padding: 30px;
       margin-bottom: 30px;
     }
-    
     .user-info {
       display: flex;
       align-items: center;
       gap: 24px;
     }
-    
     .user-avatar {
       width: 100px;
       height: 100px;
       border-radius: 50%;
       overflow: hidden;
     }
-    
-    .user-avatar img {
+    .user-avatar img, .avatar-placeholder {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-    
-    .avatar-placeholder {
-      width: 100%;
-      height: 100%;
-      background-color: var(--primary-color);
-      color: white;
-      font-size: 2.5rem;
-      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
+    .avatar-placeholder {
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: 600;
+    }
     .user-details h1 {
       font-size: 1.8rem;
       color: var(--primary-color);
       margin-bottom: 8px;
     }
-    
     .user-joined {
       font-size: 0.9rem;
       color: #666;
       margin-top: 5px;
     }
-    
     .profile-actions {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    
     .profile-content {
-      background-color: #FFFFFF;
+      background: #fff;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       padding: 30px;
     }
-    
     .profile-content h2 {
       color: var(--primary-color);
       font-size: 1.5rem;
@@ -157,62 +145,48 @@ import { Timestamp } from 'firebase/firestore';
       border-bottom: 1px solid #eee;
       padding-bottom: 10px;
     }
-    
     .user-polls-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 24px;
       margin-bottom: 40px;
     }
-    
     .poll-card {
-      background-color: #FFFFFF;
+      background: #fff;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       padding: 24px;
       transition: var(--transition);
     }
-    
-    .poll-card.active-poll {
-      background-color: #e2fddf;
-    }
-
-    .poll-card.closed-poll {
-      background-color: #ffe6e6;
-    }
-
+    .poll-card.active-poll { background: #e2fddf; }
+    .poll-card.closed-poll { background: #ffe6e6; }
     .poll-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     }
-    
     .poll-card h3 {
       font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 12px;
       color: var(--primary-color);
     }
-    
     .poll-meta {
       display: flex;
       justify-content: space-between;
       margin-bottom: 10px;
       font-size: 0.9rem;
     }
-    
     .poll-status {
       padding: 3px 8px;
       border-radius: 12px;
       font-weight: 500;
-      background-color: #ccc;
+      background: #ccc;
       color: #333;
     }
-    
     .poll-status.active {
-      background-color: var(--success-color);
-      color: white;
+      background: var(--success-color);
+      color: #fff;
     }
-    
     .poll-options {
       display: flex;
       justify-content: space-between;
@@ -220,44 +194,15 @@ import { Timestamp } from 'firebase/firestore';
       margin-bottom: 16px;
       font-size: 0.9rem;
     }
-    
-    .poll-actions {
-      display: flex;
-      justify-content: center;
-    }
-    
-    .no-polls {
-      text-align: center;
-      padding: 30px 0;
-    }
-    
-    .no-polls p {
-      margin-bottom: 16px;
-      font-size: 1.1rem;
-    }
-    
+    .poll-actions { display: flex; justify-content: center; }
+    .no-polls { text-align: center; padding: 30px 0; }
+    .no-polls p { margin-bottom: 16px; font-size: 1.1rem; }
     @media (max-width: 768px) {
-      .profile-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 24px;
-      }
-      
-      .profile-actions {
-        width: 100%;
-      }
-      
-      .user-info {
-        width: 100%;
-      }
+      .profile-header { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .profile-actions, .user-info { width: 100%; }
     }
-    
     @media (max-width: 576px) {
-      .user-info {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-      }
+      .user-info { flex-direction: column; align-items: center; text-align: center; }
     }
   `]
 })
