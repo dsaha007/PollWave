@@ -5,6 +5,7 @@ import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../../services/auth.service';
 import { PollService } from '../../../services/poll.service';
 import { VoteService } from '../../../services/vote.service';
+import { ReportService } from '../../../services/report.service';
 import { Poll, PollOption } from '../../../models/poll.model';
 import { Subscription } from 'rxjs';
 
@@ -55,7 +56,7 @@ Chart.register(...registerables);
           <div class="poll-content">
           <div class="voting-section" *ngIf="poll.isActive && !hasVoted && currentUser">
             <h2>Cast Your Vote</h2>
-            <div class="options-list">
+            <div class="options-list" [ngClass]="{'grid-options': poll.options.length > 4}">
               @for (option of poll.options; track option.id) {
                 <div 
                   class="option-item" 
@@ -96,7 +97,7 @@ Chart.register(...registerables);
                 <canvas id="resultsChart"></canvas>
               </div>
               
-              <div class="results-table">
+              <div class="results-table" [ngClass]="{'grid-options': poll.options.length > 4}">
                 <div *ngFor="let option of poll?.options; let index = index" class="result-row">
                   <div class="result-text">{{ option.text }}</div>
                   <div class="result-bar-container">
@@ -154,6 +155,12 @@ Chart.register(...registerables);
               >
                 {{ isDeleting ? 'Deleting...' : 'Delete Poll' }}
               </button>
+            } @else {
+              <button 
+                class="btn btn-outline danger" 
+                (click)="openReportDialog()" 
+                *ngIf="currentUser && !isCreator"
+              >Report</button>
             }
           </div>
         </div>
@@ -495,13 +502,6 @@ Chart.register(...registerables);
       width: 90%;
     }
     
-    .modal p {
-      margin-bottom: 20px;
-      font-size: 1.2rem;
-      color: #333;
-    }
-    
-    .btn-close {
       background-color: #dc3545;
       color: white;
       border: none;
@@ -513,6 +513,38 @@ Chart.register(...registerables);
     
     .btn-close:hover {
       background-color: #c82333;
+    }
+
+    .options-list.grid-options,
+    .results-table.grid-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (min-width: 600px) {
+      .options-list.grid-options,
+      .results-table.grid-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (min-width: 900px) {
+      .options-list.grid-options,
+      .results-table.grid-options {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 1200px) {
+      .options-list.grid-options,
+      .results-table.grid-options {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .option-item,
+    .result-row {
+      width: 100%;
+      margin-bottom: 0;
     }
   `]
 })
@@ -546,6 +578,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private pollService = inject(PollService);
   private voteService = inject(VoteService);
+  private reportService = inject(ReportService);
   
   get currentUser() {
     return this.authService.getCurrentUser();
@@ -855,6 +888,16 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
       navigator.clipboard.writeText(pollUrl).then(() => {
         alert('Poll link copied to clipboard!');
       }).catch((error) => console.error('Error copying link:', error));
+    }
+  }
+
+  openReportDialog() {
+    if (!this.poll?.id) return;
+    const reason = prompt('Why are you reporting this poll? (optional)');
+    if (reason !== null) {
+      this.reportService.reportPoll(this.poll.id, reason || 'No reason provided')
+        .then(() => alert('Thank you for reporting.'))
+        .catch(err => alert(err.message));
     }
   }
 }

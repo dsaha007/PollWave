@@ -4,7 +4,10 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PollService } from '../../../services/poll.service';
 import { AuthService } from '../../../services/auth.service';
+import { CategoryService } from '../../../services/category.service';
+import { ReportService } from '../../../services/report.service';
 import { Poll } from '../../../models/poll.model';
+import { Category } from '../../../models/category.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -50,7 +53,6 @@ import { Subscription } from 'rxjs';
           >
             <option value="">All Categories</option>
             <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-            <option value="custom">Custom Categories</option> 
           </select>
         </div>
 
@@ -101,6 +103,11 @@ import { Subscription } from 'rxjs';
             </p>
             <div class="poll-actions">
               <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
+              <button 
+                class="btn btn-outline danger" 
+                (click)="openReportDialog(poll)"
+                *ngIf="user$ | async"
+              >Report</button>
             </div>
           </div>
         }
@@ -259,7 +266,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
   statusFilter = 'all';
   categoryFilter = '';
   typeFilter = 'all';
-  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment'];
+  categories: string[] = [];
 
   pageSize = 10; // Number of polls per page
   currentPage = 1; // Current page number
@@ -268,10 +275,15 @@ export class ListPollsComponent implements OnInit, OnDestroy {
 
   private pollService = inject(PollService);
   private authService = inject(AuthService);
+  private categoryService = inject(CategoryService);
+  private reportService = inject(ReportService);
 
   user$ = this.authService.user$;
 
   ngOnInit(): void {
+    this.categoryService.getCategories().subscribe(cats => {
+      this.categories = cats.map(cat => cat.name);
+    });
     this.fetchTotalPollCount();
     this.loadPolls();
   }
@@ -363,5 +375,14 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.categoryFilter = '';
     this.typeFilter = 'all';
     this.applyFilters();
+  }
+
+  openReportDialog(poll: Poll) {
+    const reason = prompt('Why are you reporting this poll? (optional)');
+    if (reason !== null) {
+      this.reportService.reportPoll(poll.id!, reason || 'No reason provided')
+        .then(() => alert('Thank you for reporting.'))
+        .catch(err => alert(err.message));
+    }
   }
 }

@@ -117,6 +117,21 @@ export class AuthService {
   async login(email: string, password: string): Promise<void> {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
+
+      // Fetch user data after login
+      const user = this.auth.currentUser;
+      if (user) {
+        const userRef = doc(this.db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data() as User;
+          if (userData.banned) {
+            await signOut(this.auth);
+            throw new Error('You are banned. Contact support.');
+          }
+        }
+      }
+
       this.router.navigate(['/']);
     } catch (error: any) {
       switch (error.code) {
@@ -125,8 +140,7 @@ export class AuthService {
         case 'auth/invalid-email':
           throw new Error('Invalid email format.');
         default:
-          console.error('Login error:', error);
-          throw new Error('An unexpected error occurred. Please try again.');
+          throw new Error(error.message || 'An unexpected error occurred. Please try again.');
       }
     }
   }
@@ -148,26 +162,31 @@ export class AuthService {
       const result = await signInWithPopup(this.auth, provider);
       const user = result.user;
 
-      const userData: User = {
-        uid: user.uid,
-        email: user.email!,
-        displayName: user.displayName || '',
-        photoURL: user.photoURL || '',
-        createdAt: new Date()
-      };
-
       const userRef = doc(this.db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
 
-      if (!userSnap.exists()) {
+      if (userSnap.exists()) {
+        const userData = userSnap.data() as User;
+        if (userData.banned) {
+          await signOut(this.auth);
+          throw new Error('You are banned. Contact support.');
+        }
+      } else {
+        // New user, create user doc
+        const userData: User = {
+          uid: user.uid,
+          email: user.email!,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          createdAt: new Date()
+        };
         await setDoc(userRef, userData);
       }
 
-      this.userSubject.next(userData);
+      this.userSubject.next(userSnap.exists() ? userSnap.data() as User : null);
       this.router.navigate(['/']);
-    } catch (error) {
-      console.error('Google Sign-In error:', error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign in with Google. Please try again.');
     }
   }
 

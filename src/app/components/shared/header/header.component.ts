@@ -25,14 +25,21 @@ import { User } from '../../../models/user.model';
             <ul class="nav-list">
               <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
               <li><a routerLink="/polls" routerLinkActive="active">Polls</a></li>
-              @if (user$ | async) {
+              <ng-container *ngIf="user$ | async as user; else guestLinks">
+                <ng-container *ngIf="user.isAdmin">
+                  <li><a routerLink="/admin/categories" routerLinkActive="active">Manage Categories</a></li>
+                  <li><a routerLink="/admin/users" routerLinkActive="active">Manage Users</a></li>
+                  <li><a routerLink="/admin/polls" routerLinkActive="active">Manage Polls</a></li>
+                  <li><a routerLink="/admin/analytics" routerLinkActive="active">Analytics</a></li>
+                </ng-container>
                 <li><a routerLink="/polls/create" routerLinkActive="active">Create Poll</a></li>
                 <li><a routerLink="/profile" routerLinkActive="active">Profile</a></li>
                 <li><a href="#" (click)="logout($event)">Logout</a></li>
-              } @else {
+              </ng-container>
+              <ng-template #guestLinks>
                 <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
                 <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
-              }
+              </ng-template>
             </ul>
           </nav>
           
@@ -48,14 +55,21 @@ import { User } from '../../../models/user.model';
             <ul class="mobile-nav-list">
               <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Home</a></li>
               <li><a routerLink="/polls" routerLinkActive="active" (click)="closeMobileMenu()">Polls</a></li>
-              @if (user$ | async) {
+              <ng-container *ngIf="user$ | async as user; else guestMobileLinks">
+                <ng-container *ngIf="user.isAdmin">
+                  <li><a routerLink="/admin/categories" (click)="closeMobileMenu()">Manage Categories</a></li>
+                  <li><a routerLink="/admin/users" (click)="closeMobileMenu()">Manage Users</a></li>
+                  <li><a routerLink="/admin/polls" (click)="closeMobileMenu()">Manage Polls</a></li>
+                  <li><a routerLink="/admin/analytics" (click)="closeMobileMenu()">Analytics</a></li>
+                </ng-container>
                 <li><a routerLink="/polls/create" routerLinkActive="active" (click)="closeMobileMenu()">Create Poll</a></li>
                 <li><a routerLink="/profile" routerLinkActive="active" (click)="closeMobileMenu()">Profile</a></li>
                 <li><a href="#" (click)="logout($event); closeMobileMenu()">Logout</a></li>
-              } @else {
+              </ng-container>
+              <ng-template #guestMobileLinks>
                 <li><a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a></li>
                 <li><a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Register</a></li>
-              }
+              </ng-template>
             </ul>
           </div>
         }
@@ -196,6 +210,9 @@ import { User } from '../../../models/user.model';
       color: var(--accent-color);
     }
     
+    .admin-dropdown, .dropdown-menu {
+      display: none !important;
+    }
     @media (max-width: 768px) {
       .nav {
         display: none;
@@ -204,6 +221,16 @@ import { User } from '../../../models/user.model';
       .mobile-menu-toggle {
         display: flex;
       }
+      .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: transparent;
+        min-width: 0;
+        padding: 0;
+      }
+      .dropdown-menu a {
+        padding: 10px 16px;
+      }
     }
   `]
 })
@@ -211,6 +238,8 @@ export class HeaderComponent {
   authService = inject(AuthService);
   user$ = this.authService.user$;
   mobileMenuOpen = false;
+  showAdminMenu = false;
+  showAdminMobileMenu = false;
 
   logout(event: Event): void {
     event.preventDefault();
@@ -223,5 +252,10 @@ export class HeaderComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
+    this.showAdminMobileMenu = false;
+  }
+
+  toggleAdminMobileMenu(): void {
+    this.showAdminMobileMenu = !this.showAdminMobileMenu;
   }
 }

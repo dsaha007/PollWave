@@ -271,14 +271,14 @@ export class LoginComponent {
       this.errorMessage = 'Please fill in all required fields.';
       return;
     }
-  
+
     this.isLoading = true;
     this.errorMessage = '';
-  
+
     try {
       await this.authService.login(this.email, this.password);
     } catch (error: any) {
-      this.errorMessage = error.message; 
+      this.errorMessage = error.message; // <-- This will show "You are banned. Contact support."
     } finally {
       this.isLoading = false;
     }

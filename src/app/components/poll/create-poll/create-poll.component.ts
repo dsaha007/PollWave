@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PollService } from '../../../services/poll.service';
+import { CategoryService } from '../../../services/category.service'; // <-- Import
+import { Category } from '../../../models/category.model'; // <-- Import
 
 @Component({
   selector: 'app-create-poll',
@@ -85,7 +87,7 @@ import { PollService } from '../../../services/poll.service';
               required
             >
               <option value="" disabled>Select a category</option>
-              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+              <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
               <option value="custom">+ Add New Category</option>
             </select>
           </div>
@@ -109,19 +111,6 @@ import { PollService } from '../../../services/poll.service';
               Add Category
             </button>
           </div>
-
-          <!-- <div *ngIf="isAddingCategory" class="form-group">
-            <label for="newCategory">New Category</label>
-            <input 
-              type="text" 
-              id="newCategory" 
-              class="form-control" 
-              [(ngModel)]="newCategory" 
-              name="newCategory" 
-              placeholder="Enter new category"
-              (blur)="saveCustomCategory()" 
-            >
-          </div> -->
 
           <div class="form-group">
             <label for="isAnonymous">Poll Type</label>
@@ -305,17 +294,25 @@ export class CreatePollComponent {
   question = '';
   options: string[] = ['', ''];
   category = ''; 
-  categories = ['Technology', 'Health', 'Education', 'Sports', 'Entertainment']; 
+  categories: Category[] = []; // <-- Now Category[]
   isAnonymous = false; 
   errorMessage = '';
   isLoading = false;
   isAddingCategory = false; 
   isCustomCategory = false; 
   newCategory = '';
-  
+  categoryAddedMessage = '';
+
   private pollService = inject(PollService);
   private router = inject(Router);
-  
+  private categoryService = inject(CategoryService); // <-- Inject
+
+  ngOnInit(): void {
+    this.categoryService.getCategories().subscribe(cats => {
+      this.categories = cats;
+    });
+  }
+
   addOption(): void {
     this.options.push('');
   }
@@ -340,59 +337,22 @@ export class CreatePollComponent {
   
   onCategoryChange(event: Event): void {
     const selectedValue = (event.target as HTMLSelectElement).value;
-    if (selectedValue === 'custom') {
-      this.isAddingCategory = true;
-    } else {
-      this.isAddingCategory = false;
-    }
+    this.isAddingCategory = selectedValue === 'custom';
   }
 
-  categoryAddedMessage = ''; 
-
-  // saveCustomCategory(): void {
-  //   if (this.newCategory.trim()) {
-  //     const newCategory = this.newCategory.trim();
-  
-  //     
-  //     this.categories.push(newCategory);
-  //     this.category = newCategory;
-  
-  //     
-  //     this.isCustomCategory = true;
-  
-  //    
-  //     this.categoryAddedMessage = `Category "${newCategory}" has been added successfully!`;
-  
-  //     
-  //     this.newCategory = '';
-  //     this.isAddingCategory = false;
-  
-  //     /
-  //     setTimeout(() => {
-  //       this.categoryAddedMessage = '';
-  //     }, 3000);
-  //   } else {
-  //     alert('Please enter a category before leaving the field.');
-  //   }
-  // }
-
-  addCategory(): void {
+  async addCategory(): Promise<void> {
     if (this.newCategory.trim()) {
-      const newCategory = this.newCategory.trim();
-
-      this.categories.push(newCategory);
-      this.category = newCategory;
-  
-      this.isCustomCategory = true;
-  
-      this.categoryAddedMessage = `Category "${newCategory}" has been added successfully!`;
-  
-      this.newCategory = '';
-      this.isAddingCategory = false;
-  
-      setTimeout(() => {
-        this.categoryAddedMessage = '';
-      }, 3000);
+      try {
+        await this.categoryService.addCategory(this.newCategory.trim());
+        this.category = this.newCategory.trim();
+        this.isCustomCategory = true;
+        this.categoryAddedMessage = `Category "${this.newCategory}" has been added successfully!`;
+        this.newCategory = '';
+        this.isAddingCategory = false;
+        setTimeout(() => { this.categoryAddedMessage = ''; }, 3000);
+      } catch (error) {
+        this.errorMessage = 'Failed to add category. Please try again.';
+      }
     } else {
       alert('Please enter a category before adding it.');
     }

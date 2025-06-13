@@ -4,5 +4,7 @@ export interface User {
   displayName?: string;
   photoURL?: string;
   createdAt: Date;
-  password?: string; 
+  password?: string;
+  banned?: boolean;
+  isAdmin?: boolean; // <-- Add this line
 }

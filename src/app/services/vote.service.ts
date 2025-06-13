@@ -4,7 +4,8 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  onSnapshot
 } from 'firebase/firestore';
 import { Observable, from, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -63,9 +64,9 @@ export class VoteService {
   getPollVotes(pollId: string): Observable<Vote[]> {
     const votesRef = collection(this.db, 'votes');
     const q = query(votesRef, where('pollId', '==', pollId));
-    
-    return from(getDocs(q)).pipe(
-      map(snapshot => {
+
+    return new Observable<Vote[]>(subscriber => {
+      const unsubscribe = onSnapshot(q, snapshot => {
         const votes: Vote[] = [];
         snapshot.forEach(doc => {
           const voteData = doc.data() as Vote;
@@ -75,12 +76,9 @@ export class VoteService {
             createdAt: (voteData.createdAt as any).toDate()
           });
         });
-        return votes;
-      }),
-      catchError(error => {
-        console.error('Error fetching poll votes:', error);
-        return of([]);
-      })
-    );
+        subscriber.next(votes);
+      }, error => subscriber.error(error));
+      return unsubscribe;
+    });
   }
 }

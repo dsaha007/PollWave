@@ -7,6 +7,11 @@ import { ListPollsComponent } from './components/poll/list-polls/list-polls.comp
 import { PollDetailsComponent } from './components/poll/poll-details/poll-details.component';
 import { UserProfileComponent } from './components/user/user-profile/user-profile.component';
 import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
+import { AdminCategoriesComponent } from './components/admin/admin-categories.component';
+import { AdminUsersComponent } from './components/admin/admin-users.component';
+import { AdminPollsComponent } from './components/admin/admin-polls.component';
+import { AdminAnalyticsComponent } from './components/admin/admin-analytics.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -16,5 +21,9 @@ export const routes: Routes = [
   { path: 'polls/create', component: CreatePollComponent, canActivate: [authGuard] },
   { path: 'polls/:id', component: PollDetailsComponent },
   { path: 'profile', component: UserProfileComponent, canActivate: [authGuard] },
+  { path: 'admin/categories', component: AdminCategoriesComponent, canActivate: [adminGuard] },
+  { path: 'admin/users', component: AdminUsersComponent, canActivate: [adminGuard] },
+  { path: 'admin/polls', component: AdminPollsComponent, canActivate: [adminGuard] },
+  { path: 'admin/analytics', component: AdminAnalyticsComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

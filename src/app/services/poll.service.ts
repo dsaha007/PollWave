@@ -247,11 +247,10 @@ export class PollService {
     );
   }
   getPolls(): Observable<Poll[]> {
-    const pollsRef = collection(this.db, 'polls');
-    const q = query(pollsRef, orderBy('createdAt', 'desc'));
-    
-    return from(getDocs(q)).pipe(
-      map(snapshot => {
+    return new Observable<Poll[]>(subscriber => {
+      const pollsRef = collection(this.db, 'polls');
+      const q = query(pollsRef, orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, snapshot => {
         const polls: Poll[] = [];
         snapshot.forEach(doc => {
           const pollData = doc.data() as Poll;
@@ -261,13 +260,10 @@ export class PollService {
             createdAt: (pollData.createdAt as any).toDate()
           });
         });
-        return polls;
-      }),
-      catchError(error => {
-        console.error('Error fetching polls:', error);
-        return of([]);
-      })
-    );
+        subscriber.next(polls);
+      }, error => subscriber.error(error));
+      return unsubscribe;
+    });
   }
 
   getUserPolls(userId: string): Observable<Poll[]> {
@@ -361,34 +357,37 @@ export class PollService {
     }
   }
 
-  async togglePollStatus(pollId: string): Promise<void> {
-    try {
-      const user = this.authService.getCurrentUser();
-      if (!user) {
-        throw new Error('User must be authenticated');
-      }
-      
-      const pollRef = doc(this.db, 'polls', pollId);
-      const pollSnap = await getDoc(pollRef);
-      
-      if (!pollSnap.exists()) {
-        throw new Error('Poll not found');
-      }
-      
-      const pollData = pollSnap.data() as Poll;
-      
-      if (pollData.createdBy !== user.uid) {
-        throw new Error('Only the poll creator can change its status');
-      }
-      
-      await updateDoc(pollRef, {
-        isActive: !pollData.isActive
-      });
-    } catch (error) {
-      console.error('Error toggling poll status:', error);
-      throw error;
+  // ...existing code...
+async togglePollStatus(pollId: string): Promise<void> {
+  try {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('User must be authenticated');
     }
+    
+    const pollRef = doc(this.db, 'polls', pollId);
+    const pollSnap = await getDoc(pollRef);
+    
+    if (!pollSnap.exists()) {
+      throw new Error('Poll not found');
+    }
+    
+    const pollData = pollSnap.data() as Poll;
+    
+    // Allow poll creator OR admin to change status
+    if (pollData.createdBy !== user.uid && !user.isAdmin) {
+      throw new Error('Only the poll creator or an admin can change its status');
+    }
+    
+    await updateDoc(pollRef, {
+      isActive: !pollData.isActive
+    });
+  } catch (error) {
+    console.error('Error toggling poll status:', error);
+    throw error;
   }
+}
+// ...existing code...
 
   async deletePoll(pollId: string): Promise<void> {
     try {
@@ -396,31 +395,33 @@ export class PollService {
       if (!user) {
         throw new Error('User must be authenticated');
       }
-      
+
       const pollRef = doc(this.db, 'polls', pollId);
       const pollSnap = await getDoc(pollRef);
-      
+
       if (!pollSnap.exists()) {
         throw new Error('Poll not found');
       }
-      
+
       const pollData = pollSnap.data() as Poll;
-      
-      if (pollData.createdBy !== user.uid) {
-        throw new Error('Only the poll creator can delete it');
+
+      // Allow poll creator OR admin to delete
+      if (pollData.createdBy !== user.uid && !user.isAdmin) {
+        throw new Error('Only the poll creator or an admin can delete this poll');
       }
-      
+
       await deleteDoc(pollRef);
-      
+
+      // Optionally, delete related votes
       const votesRef = collection(this.db, 'votes');
       const q = query(votesRef, where('pollId', '==', pollId));
       const votesSnap = await getDocs(q);
-      
+
       const deletePromises: Promise<void>[] = [];
       votesSnap.forEach(doc => {
         deletePromises.push(deleteDoc(doc.ref));
       });
-      
+
       await Promise.all(deletePromises);
     } catch (error) {
       console.error('Error deleting poll:', error);
