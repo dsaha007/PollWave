@@ -30,6 +30,14 @@ Chart.register(...registerables);
         <div class="poll-details-container">
           <div class="poll-header">
             <h1>{{ poll.question }}</h1>
+            <span 
+              class="poll-type-badge" 
+              [ngClass]="poll.isAnonymous ? 'anonymous' : 'non-anonymous'"
+              [title]="poll.isAnonymous ? 'Your vote is private' : 'Your name will be visible in results'"
+            >
+              <ng-container *ngIf="poll.isAnonymous">🕵️‍♂️ Anonymous Poll</ng-container>
+              <ng-container *ngIf="!poll.isAnonymous">👤 Non-Anonymous Poll</ng-container>
+            </span>
             <div class="poll-meta">
               <span class="poll-votes">{{ poll.totalVotes || 0 }} votes</span>
               <span class="poll-status" [class.active]="poll.isActive">
@@ -99,30 +107,32 @@ Chart.register(...registerables);
               </div>
               
               <div class="results-table" [ngClass]="{'grid-options': poll.options.length > 4}">
-                <div *ngFor="let option of poll?.options; let index = index" class="result-row">
+                <div *ngFor="let option of poll?.options; let optionIdx = index"
+                     class="result-row"
+                     (mouseenter)="showVoterList(optionIdx)"
+                     (mouseleave)="hideVoterList()"
+                     (touchstart)="showVoterList(optionIdx)"
+                     (touchend)="hideVoterList()"
+                     style="position:relative;">
                   <div class="result-text">{{ option.text }}</div>
                   <div class="result-bar-container">
                     <div 
                       class="result-bar" 
                       [style.width.%]="getPercentage(option)"
-                      [style.background-color]="getBarColor(index)"
+                      [style.background-color]="getBarColor(optionIdx)"
                     ></div>
                     <div class="result-percentage">{{ getPercentage(option) }}%</div>
                   </div>
                   <div class="result-votes">{{ option.votes }} vote{{ option.votes !== 1 ? 's' : '' }}</div>
-                  
-                  <div *ngIf="!poll.isAnonymous && option.voters?.length" class="result-voters">
-                    <strong>Voters for option: {{ option.text }}</strong>
-                    <div class="voter-grid">
-                      <div 
-                        *ngFor="let voter of option.voters" 
-                        class="voter-avatar" 
-                        [title]="voter" 
-                        (click)="openVoterModal(voter)"
-                      >
-                        <span class="voter-initial">{{ voter.charAt(0).toUpperCase() }}</span>
-                      </div>
-                    </div>
+                  <!-- Voter overlay on hover/tap -->
+                  <div 
+                    *ngIf="!poll.isAnonymous && option.voters?.length && activeVoterListIndex === optionIdx"
+                    class="voter-list-overlay"
+                  >
+                    <strong>Voters for {{ option.text }}:</strong>
+                    <ul>  
+                      <li *ngFor="let voter of option.voters">{{ voter }}</li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -137,13 +147,6 @@ Chart.register(...registerables);
               <button class="btn btn-outline" (click)="closeVoterModal()">Close</button>
             </div>
           </div>
-          </div>
-            
-          <div *ngIf="selectedVoter" class="modal-overlay">
-            <div class="modal">
-              <p>Voter Name: {{ selectedVoter }}</p>
-              <button class="btn btn-close" (click)="closeFullName()">Close</button>
-            </div>
           </div>
 
           <div class="poll-actions">
@@ -172,24 +175,29 @@ Chart.register(...registerables);
                 (click)="openReportDialog()" 
                 *ngIf="currentUser && !isCreator"
               >Report</button>
-              <!-- Report Modal -->
-              <div *ngIf="reportModalOpen" class="modal-overlay">
-                <div class="modal-content">
-                  <button (click)="closeReportModal()" class="modal-close">&times;</button>
-                  <h2 class="modal-title">Report Poll</h2>
-                  <p class="modal-desc">Why are you reporting this poll? <span class="optional">(optional)</span></p>
-                  <textarea [(ngModel)]="reportReason" rows="3" class="form-control modal-textarea" placeholder="Enter reason (optional)"></textarea>
-                  <div *ngIf="reportError" class="alert alert-danger mb-2">{{ reportError }}</div>
-                  <div class="modal-actions">
-                    <button class="btn btn-outline" (click)="closeReportModal()" [disabled]="reportSubmitting">Cancel</button>
-                    <button class="btn btn-outline danger" (click)="submitReport()" [disabled]="reportSubmitting">
-                      <span *ngIf="reportSubmitting">Reporting...</span>
-                      <span *ngIf="!reportSubmitting">Submit Report</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
             }
+          </div>
+
+          <!-- Report Modal -->
+          <div *ngIf="reportModalOpen" class="modal-overlay">
+            <div class="modal-content">
+              <button (click)="closeReportModal()" class="modal-close">&times;</button>
+              <h2 class="modal-title">Report Poll</h2>
+              <p class="modal-desc">Why are you reporting this poll? <span class="optional">(optional)</span></p>
+              <textarea [(ngModel)]="reportReason" rows="3" class="form-control modal-textarea" placeholder="Enter reason (optional)"></textarea>
+              <div *ngIf="reportError" class="alert alert-danger mb-2">{{ reportError }}</div>
+              <div *ngIf="reportSuccess" class="alert alert-success mb-2">Thank you for reporting. Our team will review this poll.</div>
+              <div class="modal-actions" *ngIf="!reportSuccess">
+                <button class="btn btn-outline" (click)="closeReportModal()" [disabled]="reportSubmitting">Cancel</button>
+                <button class="btn btn-outline danger" (click)="submitReport()" [disabled]="reportSubmitting">
+                  <span *ngIf="reportSubmitting">Reporting...</span>
+                  <span *ngIf="!reportSubmitting">Submit Report</span>
+                </button>
+              </div>
+              <div class="modal-actions" *ngIf="reportSuccess">
+                <button class="btn btn-outline" (click)="closeReportModal()">Close</button>
+              </div>
+            </div>
           </div>
         </div>
       }
@@ -253,7 +261,7 @@ Chart.register(...registerables);
     .option-check { color: var(--primary-color); font-weight: bold; }
     .chart-container { height: 300px; margin-bottom: 30px; }
     .results-table { margin-bottom: 20px; }
-    .result-row { margin-bottom: 12px; }
+    .result-row { margin-bottom: 12px; cursor: pointer;}
     .result-text { margin-bottom: 5px; font-weight: 500; }
     .result-bar-container {
       display: flex;
@@ -355,7 +363,53 @@ Chart.register(...registerables);
     .result-row {
       width: 100%;
       margin-bottom: 0;
-    }`]
+    }
+    
+    .voter-list-overlay {
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: var(--primary-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+      padding: 12px 20px;
+      font-size: 1rem;
+      min-width: 180px;
+      z-index: 20;
+      border: 1px solid #eee;
+      margin-top: 8px;
+    }
+    .voter-list-overlay ul {
+      margin: 8px 0 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .voter-list-overlay li {
+      padding: 2px 0;
+      color: #333;
+    }
+
+    .poll-type-badge {
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .poll-type-badge.anonymous {
+      background: #e0e7ff;
+      color: #2d3a6e;
+    }
+    .poll-type-badge.non-anonymous {
+      background: #ffe6e6;
+      color: #b71c1c;
+}
+    
+    `]
 })
 export class PollDetailsComponent implements OnInit, OnDestroy {
   pollId: string | null = null;
@@ -372,12 +426,26 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   isCreator = false;
   chartInstance: Chart | null = null;
   selectedVoter: string | null = null; 
+  activeVoterIndex: number | null = null;
+  activeVoterOptionIndex: number | null = null;
+  activeVoterListIndex: number | null = null;
 
-  showFullName(voter: string): void {
-    this.selectedVoter = voter;
+  showVoterOverlay(optionIdx: number, voterIdx: number) {
+    this.activeVoterOptionIndex = optionIdx;
+    this.activeVoterIndex = voterIdx;
   }
-  closeFullName(): void {
-    this.selectedVoter = null;
+
+  hideVoterOverlay() {
+    this.activeVoterOptionIndex = null;
+    this.activeVoterIndex = null;
+  }
+
+  showVoterList(index: number) {
+    this.activeVoterListIndex = index;
+  }
+
+  hideVoterList() {
+    this.activeVoterListIndex = null;
   }
 
   private pollSub: Subscription | null = null;
@@ -701,30 +769,7 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
   }
 
   openReportDialog() {
-    if (!this.poll?.id) return;
-    const reason = prompt('Why are you reporting this poll? (optional)');
-    if (reason !== null) {
-      this.reportService.reportPoll(this.poll.id, reason || 'No reason provided')
-        .then(() => alert('Thank you for reporting.'))
-        .catch(err => alert(err.message));
-    }
-  }
-
-  reportModalOpen = false;
-reportReason = '';
-reportError = '';
-reportSubmitting = false;
-
-openReportModal() {
-  this.reportModalOpen = true;
-  this.reportReason = '';
-  this.reportError = '';
-}
-
-closeReportModal() {
-  this.reportModalOpen = false;
-  this.reportReason = '';
-  this.reportError = '';
+  this.openReportModal();
 }
 
 showVoterModal = false;
@@ -740,12 +785,32 @@ closeVoterModal() {
   this.selectedVoterName = null;
 }
 
+reportModalOpen = false;
+reportReason = '';
+reportError = '';
+reportSubmitting = false;
+reportSuccess = false;
+
+openReportModal() {
+  this.reportModalOpen = true;
+  this.reportReason = '';
+  this.reportError = '';
+  this.reportSuccess = false;
+}
+
+closeReportModal() {
+  this.reportModalOpen = false;
+  this.reportReason = '';
+  this.reportError = '';
+  this.reportSuccess = false;
+}
+
 async submitReport() {
   this.reportSubmitting = true;
   this.reportError = '';
   try {
     await this.reportService.reportPoll(this.poll!.id!, this.reportReason);
-    this.closeReportModal();
+    this.reportSuccess = true;
   } catch (err: any) {
     this.reportError = err.message || 'Failed to report poll.';
   } finally {
