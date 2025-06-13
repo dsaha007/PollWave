@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PollService } from '../../../services/poll.service';
-import { CategoryService } from '../../../services/category.service'; // <-- Import
-import { Category } from '../../../models/category.model'; // <-- Import
+import { CategoryService } from '../../../services/category.service';
+import { Category } from '../../../models/category.model'; 
 
 @Component({
   selector: 'app-create-poll',
@@ -294,7 +294,7 @@ export class CreatePollComponent {
   question = '';
   options: string[] = ['', ''];
   category = ''; 
-  categories: Category[] = []; // <-- Now Category[]
+  categories: Category[] = []; 
   isAnonymous = false; 
   errorMessage = '';
   isLoading = false;
@@ -305,7 +305,7 @@ export class CreatePollComponent {
 
   private pollService = inject(PollService);
   private router = inject(Router);
-  private categoryService = inject(CategoryService); // <-- Inject
+  private categoryService = inject(CategoryService); 
 
   ngOnInit(): void {
     this.categoryService.getCategories().subscribe(cats => {

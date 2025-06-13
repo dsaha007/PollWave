@@ -6,5 +6,5 @@ export interface User {
   createdAt: Date;
   password?: string;
   banned?: boolean;
-  isAdmin?: boolean; // <-- Add this line
+  isAdmin?: boolean; 
 }

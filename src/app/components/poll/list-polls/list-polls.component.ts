@@ -103,8 +103,7 @@ import { Subscription } from 'rxjs';
             </p>
             <div class="poll-actions">
               <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
-              <button 
-                class="btn btn-outline danger" 
+              <button class="btn btn-outline danger" 
                 (click)="openReportDialog(poll)"
                 *ngIf="user$ | async"
               >Report</button>
@@ -142,6 +141,25 @@ import { Subscription } from 'rxjs';
         </div>
       }
     </div>
+    @if (reportModalOpen) {
+  <div class="modal-overlay">
+    <div class="modal-content">
+      <button (click)="closeReportModal()" class="modal-close">&times;</button>
+      <h2 class="modal-title">Report Poll</h2>
+      <p class="modal-desc">Why are you reporting this poll? <span class="optional">(optional)</span></p>
+      <textarea [(ngModel)]="reportReason" rows="3" class="form-control modal-textarea" placeholder="Enter reason (optional)"></textarea>
+      <div *ngIf="reportError" class="alert alert-danger mb-2">{{ reportError }}</div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="closeReportModal()" [disabled]="reportSubmitting">Cancel</button>
+        <button class="btn btn-outline danger" (click)="submitReport()" [disabled]="reportSubmitting">
+          <span *ngIf="reportSubmitting">Reporting...</span>
+          <span *ngIf="!reportSubmitting">Submit Report</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+    
   `,
   styles: [`
     .poll-list-header {
@@ -185,6 +203,9 @@ import { Subscription } from 'rxjs';
       box-shadow: var(--box-shadow);
       padding: 24px;
       transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     
     .poll-card:hover {
@@ -235,6 +256,14 @@ import { Subscription } from 'rxjs';
       font-size: 0.9rem;
     }
 
+    .poll-actions{
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
     .pagination-controls {
       display: flex;
       justify-content: center;
@@ -254,6 +283,48 @@ import { Subscription } from 'rxjs';
       color: white;
       font-weight: bold;
     }
+
+    .polls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 900px) {
+      .polls-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .filter-controls {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+      
+    @media (min-width: 600px) {
+      .poll-actions {
+        flex-direction: row;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .filter-controls {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+    }
+
+
+
+@media (max-width: 500px) {
+  .modal-content {
+    padding: 18px 6px 12px 6px;
+    max-width: 98vw;
+  }
+}
   `]
 })
 export class ListPollsComponent implements OnInit, OnDestroy {
@@ -377,12 +448,38 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  reportModalOpen = false;
+  reportingPoll: Poll | null = null;
+  reportReason = '';
+  reportError = '';
+  reportSubmitting = false;
+
   openReportDialog(poll: Poll) {
-    const reason = prompt('Why are you reporting this poll? (optional)');
-    if (reason !== null) {
-      this.reportService.reportPoll(poll.id!, reason || 'No reason provided')
-        .then(() => alert('Thank you for reporting.'))
-        .catch(err => alert(err.message));
+    this.reportingPoll = poll;
+    this.reportReason = '';
+    this.reportError = '';
+    this.reportModalOpen = true;
+  }
+
+  closeReportModal() {
+    this.reportModalOpen = false;
+    this.reportingPoll = null;
+    this.reportReason = '';
+    this.reportError = '';
+  }
+
+  async submitReport() {
+    if (!this.reportingPoll) return;
+    this.reportSubmitting = true;
+    this.reportError = '';
+    try {
+      await this.reportService.reportPoll(this.reportingPoll.id!, this.reportReason || 'No reason provided');
+      alert('Thank you for reporting.');
+      this.closeReportModal();
+    } catch (err: any) {
+      this.reportError = err.message || 'Failed to report poll.';
+    } finally {
+      this.reportSubmitting = false;
     }
   }
 }

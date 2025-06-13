@@ -10,10 +10,12 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  browserLocalPersistence, 
+  setPersistence
 } from 'firebase/auth';
 import { hash } from 'bcryptjs'; 
-import { Observable, BehaviorSubject, from, of } from 'rxjs';
+import { Observable, BehaviorSubject, from, of, ReplaySubject } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -31,23 +33,30 @@ export class AuthService {
   isAuthenticated$: Observable<boolean> = this.user$.pipe(
     switchMap(user => of(!!user))
   );
+  private authReadySubject = new ReplaySubject<boolean>(1);
+  authReady$ = this.authReadySubject.asObservable();
 
   constructor() {
-    this.initAuthListener();
+    setPersistence(this.auth, browserLocalPersistence)
+      .then(() => {
+        this.initAuthListener();
+      })
+      .catch((error) => {
+        console.error('Error setting auth persistence:', error);
+        this.initAuthListener();
+      });
   }
 
-  private initAuthListener(): void {
+private initAuthListener(): void {
     onAuthStateChanged(this.auth, (firebaseUser) => {
       if (firebaseUser) {
         this.getUserData(firebaseUser.uid).then(userData => {
-          if (userData) {
-            this.userSubject.next(userData);
-          } else {
-            this.userSubject.next(null);
-          }
+          this.userSubject.next(userData ?? null);
+          this.authReadySubject.next(true);
         });
       } else {
         this.userSubject.next(null);
+        this.authReadySubject.next(true);
       }
     });
   }
@@ -118,7 +127,6 @@ export class AuthService {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
 
-      // Fetch user data after login
       const user = this.auth.currentUser;
       if (user) {
         const userRef = doc(this.db, 'users', user.uid);
@@ -172,7 +180,6 @@ export class AuthService {
           throw new Error('You are banned. Contact support.');
         }
       } else {
-        // New user, create user doc
         const userData: User = {
           uid: user.uid,
           email: user.email!,

@@ -278,7 +278,7 @@ export class LoginComponent {
     try {
       await this.authService.login(this.email, this.password);
     } catch (error: any) {
-      this.errorMessage = error.message; // <-- This will show "You are banned. Contact support."
+      this.errorMessage = error.message; 
     } finally {
       this.isLoading = false;
     }

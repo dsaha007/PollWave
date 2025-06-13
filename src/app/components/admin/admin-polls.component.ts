@@ -17,57 +17,79 @@ import { Report } from '../../models/report.model';
       <div class="card">
         <h2>Manage Polls</h2>
         <div *ngIf="isLoading" class="spinner"></div>
-        <table class="table" *ngIf="!isLoading">
-          <thead>
-            <tr>
-              <th>Question</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Votes</th>
-              <th>Created By</th>
-              <th>Created At</th>
-              <th>Reports</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let poll of polls">
-              <td>{{ poll.question }}</td>
-              <td>{{ poll.category }}</td>
-              <td>
-                <span [class.active]="poll.isActive" [class.closed]="!poll.isActive">
-                  {{ poll.isActive ? 'Active' : 'Closed' }}
-                </span>
-              </td>
-              <td>{{ poll.totalVotes || 0 }}</td>
-              <td>{{ getUserName(poll.createdBy) }}</td>
-              <td>{{ poll.createdAt | date:'medium' }}</td>
-              <td>
-                <button *ngIf="reports[poll.id!]?.length" class="btn btn-outline danger" (click)="viewReports(poll)">
-                  {{ reports[poll.id!].length }} Report(s)
-                </button>
-                <span *ngIf="!reports[poll.id!] || !reports[poll.id!].length">0</span>
-              </td>
-              <td>
-                <a class="btn btn-outline" [routerLink]="['/polls', poll.id]">View Poll</a>
-                <button 
-                  class="btn btn-outline" 
-                  (click)="toggleStatus(poll)" 
-                  [disabled]="isToggling[poll.id!]">
-                  {{ poll.isActive ? 'Close' : 'Reopen' }}
-                </button>
-                <button 
-                  class="btn btn-outline danger" 
-                  (click)="deletePoll(poll)" 
-                  [disabled]="isDeleting[poll.id!]">
-                  {{ isDeleting[poll.id!] ? 'Deleting...' : 'Delete' }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table" *ngIf="!isLoading">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Votes</th>
+                <th>Created By</th>
+                <th>Created At</th>
+                <th>Reports</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let poll of polls">
+                <td>{{ poll.question }}</td>
+                <td>{{ poll.category }}</td>
+                <td>
+                  <span [class.active]="poll.isActive" [class.closed]="!poll.isActive">
+                    {{ poll.isActive ? 'Active' : 'Closed' }}
+                  </span>
+                </td>
+                <td>{{ poll.totalVotes || 0 }}</td>
+                <td>{{ getUserName(poll.createdBy) }}</td>
+                <td>{{ poll.createdAt | date:'medium' }}</td>
+                <td>
+                  <button *ngIf="reports[poll.id!]?.length" class="btn btn-outline danger " (click)="viewReports(poll)">
+                    {{ reports[poll.id!].length }} Report(s)
+                  </button>
+                  <span *ngIf="!reports[poll.id!] || !reports[poll.id!].length">0</span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <a class="btn btn-outline" [routerLink]="['/polls', poll.id]">View Poll</a>
+                    <button 
+                      class="btn btn-outline" 
+                      (click)="toggleStatus(poll)" 
+                      [disabled]="isToggling[poll.id!]">
+                      {{ poll.isActive ? 'Close' : 'Reopen' }}
+                    </button>
+                    <button 
+                      class="btn btn-outline danger" 
+                      (click)="deletePoll(poll)" 
+                      [disabled]="isDeleting[poll.id!]">
+                      {{ isDeleting[poll.id!] ? 'Deleting...' : 'Delete' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+          
       </div>
     </div>
+    <!-- Report Modal -->
+<div *ngIf="showReportModal" class="modal-overlay">
+  <div class="modal-content">
+    <button (click)="closeReportModal()" class="modal-close">&times;</button>
+    <h2 class="modal-title">Reports for: {{ selectedPollQuestion }}</h2>
+    <div *ngIf="selectedReportList.length === 0" class="text-gray-500">No reports for this poll.</div>
+    <div *ngFor="let report of selectedReportList" class="mb-4 border-b pb-2">
+      <div><strong>By:</strong> {{ report.reporter }}</div>
+      <div><strong>UID:</strong> {{ report.reporterUid }}</div>
+      <div><strong>Reason:</strong> {{ report.reason }}</div>
+      <div><strong>Date:</strong> {{ report.date }}</div>
+    </div>
+    <div class="flex justify-end">
+      <button class="btn btn-outline" (click)="closeReportModal()">Close</button>
+    </div>
+  </div>
+</div>
   `,
   styles: [`
     .active { color: var(--success-color); font-weight: bold; }
@@ -77,6 +99,23 @@ import { Report } from '../../models/report.model';
     th { background: #f5f5f5; }
     .danger { color: var(--danger-color); border-color: var(--danger-color); }
     .danger:hover { background: var(--danger-color); color: #fff; }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .action-buttons .btn {
+      min-width: 100px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      padding: 0 13px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
   `]
 })
 export class AdminPollsComponent implements OnInit {
@@ -114,7 +153,6 @@ export class AdminPollsComponent implements OnInit {
       next: (polls) => {
         this.polls = polls;
         this.isLoading = false;
-        // Fetch reports for each poll
         polls.forEach(poll => {
           this.reportService.getReportsForPoll(poll.id!).subscribe(reports => {
             this.reports[poll.id!] = reports;
@@ -149,21 +187,34 @@ export class AdminPollsComponent implements OnInit {
   }
 
   viewReports(poll: Poll) {
-    const reportList = (this.reports[poll.id!] || [])
-      .map(r => {
-        // Convert Firestore Timestamp to JS Date if needed
-        let date: Date;
-        const createdAt: any = r.createdAt;
-        if (createdAt instanceof Date) {
-          date = createdAt;
-        } else if (createdAt && typeof createdAt.toDate === 'function') {
-          date = createdAt.toDate();
-        } else {
-          date = new Date(createdAt);
-        }
-        return `By: ${r.reportedBy}\nReason: ${r.reason}\nDate: ${date.toLocaleString()}`;
-      })
-      .join('\n\n');
-    alert(reportList || 'No reports for this poll.');
+  const reportList = (this.reports[poll.id!] || []).map(r => {
+    let date: Date;
+    const createdAt: any = r.createdAt;
+    if (createdAt instanceof Date) {
+      date = createdAt;
+    } else if (createdAt && typeof createdAt.toDate === 'function') {
+      date = createdAt.toDate();
+    } else {
+      date = new Date(createdAt);
+    }
+    const reporterUser = this.users.find(u => u.uid === r.reportedBy);
+    return {
+      reason: r.reason,
+      date: date.toLocaleString(),
+      reporter: reporterUser?.displayName || 'Unknown',
+      reporterUid: r.reportedBy
+    };
+  });
+  this.selectedReportList = reportList;
+  this.selectedPollQuestion = poll.question;
+  this.showReportModal = true;
   }
+  closeReportModal() {
+    this.showReportModal = false;
+    this.selectedReportList = [];
+    this.selectedPollQuestion = '';
+  }
+  showReportModal = false;
+  selectedReportList: { reason: string; date: string; reporter: string; reporterUid: string }[] = [];
+  selectedPollQuestion = '';
 }

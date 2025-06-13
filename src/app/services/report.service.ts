@@ -12,7 +12,6 @@ export class ReportService {
   async reportPoll(pollId: string, reason: string): Promise<void> {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('You must be logged in to report.');
-    // Prevent duplicate report by same user
     const q = query(collection(this.db, 'reports'), where('pollId', '==', pollId), where('reportedBy', '==', user.uid));
     const snap = await getDocs(q);
     if (!snap.empty) throw new Error('You have already reported this poll.');

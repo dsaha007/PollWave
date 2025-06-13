@@ -115,7 +115,6 @@ export class AdminAnalyticsComponent implements OnInit, OnDestroy {
       this.activePolls = polls.filter(p => p.isActive).length;
       this.closedPolls = polls.filter(p => !p.isActive).length;
 
-      // Calculate votes per category and total votes
       this.votesPerCategory = {};
       this.totalVotes = 0;
       for (const poll of polls) {
@@ -142,24 +141,28 @@ export class AdminAnalyticsComponent implements OnInit, OnDestroy {
       this.chartInstance.destroy();
     }
 
+    const backgroundColors = [
+      '#EC6408', '#4BC0C0', '#36A2EB', '#FF6384', '#9966FF', '#FFCE56', '#2ecc71', '#e74c3c', '#f1c40f', '#8e44ad'
+    ];
+
     this.chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: categories,
-        datasets: [{
-          label: 'Votes',
-          data: votes,
-          backgroundColor: '#EC6408'
-        }]
+      labels: categories,
+      datasets: [{
+        label: 'Votes',
+        data: votes,
+        backgroundColor: categories.map((_, i) => backgroundColors[i % backgroundColors.length])
+      }]
       },
       options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } }
-        }
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } }
+      }
       }
     });
   }

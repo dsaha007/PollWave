@@ -27,10 +27,18 @@ import { User } from '../../../models/user.model';
               <li><a routerLink="/polls" routerLinkActive="active">Polls</a></li>
               <ng-container *ngIf="user$ | async as user; else guestLinks">
                 <ng-container *ngIf="user.isAdmin">
-                  <li><a routerLink="/admin/categories" routerLinkActive="active">Manage Categories</a></li>
-                  <li><a routerLink="/admin/users" routerLinkActive="active">Manage Users</a></li>
-                  <li><a routerLink="/admin/polls" routerLinkActive="active">Manage Polls</a></li>
-                  <li><a routerLink="/admin/analytics" routerLinkActive="active">Analytics</a></li>
+                  <li class="admin-dropdown" [class.open]="adminDropdownOpen" (mouseenter)="openAdminDropdown()" (mouseleave)="closeAdminDropdown()">
+                    <button type="button" class="admin-dropbtn" (click)="toggleAdminDropdown($event)">
+                      Admin
+                      <span class="arrow">&#9662;</span>
+                    </button>
+                    <ul class="admin-dropdown-content">
+                      <li><a routerLink="/admin/categories" routerLinkActive="active" (click)="closeAdminDropdown()">Manage Categories</a></li>
+                      <li><a routerLink="/admin/users" routerLinkActive="active" (click)="closeAdminDropdown()">Manage Users</a></li>
+                      <li><a routerLink="/admin/polls" routerLinkActive="active" (click)="closeAdminDropdown()">Manage Polls</a></li>
+                      <li><a routerLink="/admin/analytics" routerLinkActive="active" (click)="closeAdminDropdown()">Analytics</a></li>
+                    </ul>
+                  </li>
                 </ng-container>
                 <li><a routerLink="/polls/create" routerLinkActive="active">Create Poll</a></li>
                 <li><a routerLink="/profile" routerLinkActive="active">Profile</a></li>
@@ -57,10 +65,18 @@ import { User } from '../../../models/user.model';
               <li><a routerLink="/polls" routerLinkActive="active" (click)="closeMobileMenu()">Polls</a></li>
               <ng-container *ngIf="user$ | async as user; else guestMobileLinks">
                 <ng-container *ngIf="user.isAdmin">
-                  <li><a routerLink="/admin/categories" (click)="closeMobileMenu()">Manage Categories</a></li>
-                  <li><a routerLink="/admin/users" (click)="closeMobileMenu()">Manage Users</a></li>
-                  <li><a routerLink="/admin/polls" (click)="closeMobileMenu()">Manage Polls</a></li>
-                  <li><a routerLink="/admin/analytics" (click)="closeMobileMenu()">Analytics</a></li>
+                  <li>
+                    <button class="mobile-admin-label" (click)="toggleAdminMobileMenu()" [attr.aria-expanded]="showAdminMobileMenu">
+                      Admin
+                      <span class="arrow" [class.open]="showAdminMobileMenu">&#9662;</span>
+                    </button>
+                    <ul class="mobile-admin-list" *ngIf="showAdminMobileMenu">
+                      <li><a routerLink="/admin/categories" (click)="closeMobileMenu()">Manage Categories</a></li>
+                      <li><a routerLink="/admin/users" (click)="closeMobileMenu()">Manage Users</a></li>
+                      <li><a routerLink="/admin/polls" (click)="closeMobileMenu()">Manage Polls</a></li>
+                      <li><a routerLink="/admin/analytics" (click)="closeMobileMenu()">Analytics</a></li>
+                    </ul>
+                  </li>
                 </ng-container>
                 <li><a routerLink="/polls/create" routerLinkActive="active" (click)="closeMobileMenu()">Create Poll</a></li>
                 <li><a routerLink="/profile" routerLinkActive="active" (click)="closeMobileMenu()">Profile</a></li>
@@ -232,6 +248,97 @@ import { User } from '../../../models/user.model';
         padding: 10px 16px;
       }
     }
+
+        /* Desktop dropdown */
+    .admin-dropdown {
+      position: relative;
+    }
+    .admin-dropbtn {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0;
+    }
+    .admin-dropdown .arrow {
+      font-size: 0.8em;
+    }
+    .admin-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      min-width: 180px;
+      background: #fff;
+      color: var(--primary-color);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      z-index: 100;
+      padding: 8px 0;
+    }
+    .admin-dropdown.open .admin-dropdown-content,
+    .admin-dropdown:focus-within .admin-dropdown-content {
+      display: block;
+    }
+    .admin-dropdown-content li {
+      padding: 0;
+    }
+    .admin-dropdown-content a {
+      display: block;
+      padding: 10px 18px;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .admin-dropdown-content a:hover,
+    .admin-dropdown-content a.active {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    
+    .mobile-admin-label {
+      font-weight: bold;
+      color: var(--accent-color);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      font-size: 18px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .mobile-admin-label .arrow {
+      margin-left: 8px;
+      transition: transform 0.2s;
+    }
+    .mobile-admin-label .arrow.open {
+      transform: rotate(180deg);
+    }
+    .mobile-admin-list {
+      list-style: none;
+      padding-left: 16px;
+      margin: 0 0 8px 0;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    @media (max-width: 768px) {
+      .admin-dropdown { display: none !important; }
+    }
+    @media (min-width: 769px) {
+      .admin-dropdown { display: block !important; }
+    }
   `]
 })
 export class HeaderComponent {
@@ -240,6 +347,7 @@ export class HeaderComponent {
   mobileMenuOpen = false;
   showAdminMenu = false;
   showAdminMobileMenu = false;
+  adminDropdownOpen = false;
 
   logout(event: Event): void {
     event.preventDefault();
@@ -258,4 +366,18 @@ export class HeaderComponent {
   toggleAdminMobileMenu(): void {
     this.showAdminMobileMenu = !this.showAdminMobileMenu;
   }
+
+  toggleAdminDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.adminDropdownOpen = !this.adminDropdownOpen;
+  }
+
+  openAdminDropdown(): void {
+    this.adminDropdownOpen = true;
+  }
+
+  closeAdminDropdown(): void {
+    this.adminDropdownOpen = false;
+  }
+  
 }

@@ -357,7 +357,6 @@ export class PollService {
     }
   }
 
-  // ...existing code...
 async togglePollStatus(pollId: string): Promise<void> {
   try {
     const user = this.authService.getCurrentUser();
@@ -374,7 +373,6 @@ async togglePollStatus(pollId: string): Promise<void> {
     
     const pollData = pollSnap.data() as Poll;
     
-    // Allow poll creator OR admin to change status
     if (pollData.createdBy !== user.uid && !user.isAdmin) {
       throw new Error('Only the poll creator or an admin can change its status');
     }
@@ -387,7 +385,6 @@ async togglePollStatus(pollId: string): Promise<void> {
     throw error;
   }
 }
-// ...existing code...
 
   async deletePoll(pollId: string): Promise<void> {
     try {
@@ -405,14 +402,12 @@ async togglePollStatus(pollId: string): Promise<void> {
 
       const pollData = pollSnap.data() as Poll;
 
-      // Allow poll creator OR admin to delete
       if (pollData.createdBy !== user.uid && !user.isAdmin) {
         throw new Error('Only the poll creator or an admin can delete this poll');
       }
 
       await deleteDoc(pollRef);
 
-      // Optionally, delete related votes
       const votesRef = collection(this.db, 'votes');
       const q = query(votesRef, where('pollId', '==', pollId));
       const votesSnap = await getDocs(q);
