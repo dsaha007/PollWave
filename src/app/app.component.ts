@@ -32,6 +32,13 @@ import { CommonModule } from '@angular/common';
       </main>
       <app-footer></app-footer>
       <app-back-to-top></app-back-to-top>
+      <div *ngIf="showBannedModal" class="modal-overlay">
+        <div class="modal-content">
+          <h2 class="modal-title">You are banned</h2>
+          <p>Your account has been banned by an administrator. You have been logged out.</p>
+          <button class="btn btn-outline" (click)="closeBannedModal()">Close</button>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -48,10 +55,27 @@ import { CommonModule } from '@angular/common';
 export class AppComponent {
   private authService = inject(AuthService);
   authReady = false;
+  showBannedModal = false;
+  bannedHandled = false;
 
   constructor() {
     this.authService.authReady$.subscribe(ready => {
       this.authReady = ready;
     });
+    this.authService.user$.subscribe(user => {
+      if (user && user.banned && !this.bannedHandled) {
+        this.bannedHandled = true;
+        this.showBannedModal = true;
+        setTimeout(() => {
+          this.authService.logout();
+        }, 2000); 
+      }
+    });
   }
+
+  closeBannedModal() {
+    this.showBannedModal = false;
+  }
+  
 }
+  

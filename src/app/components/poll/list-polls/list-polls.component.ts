@@ -2,13 +2,12 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { Poll } from '../../../models/poll.model';
 import { PollService } from '../../../services/poll.service';
 import { AuthService } from '../../../services/auth.service';
 import { CategoryService } from '../../../services/category.service';
 import { ReportService } from '../../../services/report.service';
-import { Poll } from '../../../models/poll.model';
-import { Category } from '../../../models/category.model';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-list-polls',
@@ -103,10 +102,12 @@ import { Subscription } from 'rxjs';
             </p>
             <div class="poll-actions">
               <a [routerLink]="['/polls', poll.id]" class="btn btn-primary">View Results</a>
+              <ng-container *ngIf="(user$ | async) as user">
               <button class="btn btn-outline danger" 
                 (click)="openReportDialog(poll)"
-                *ngIf="user$ | async"
+                *ngIf="user.uid !== poll.createdBy"
               >Report</button>
+            </ng-container>
             </div>
           </div>
         }
@@ -273,7 +274,6 @@ import { Subscription } from 'rxjs';
   `]
 })
 export class ListPollsComponent implements OnInit, OnDestroy {
-  lastVisible: any; 
   private pollsSubscription: Subscription | undefined;
   isLoading = false;
   allPolls: Poll[] = [];
@@ -300,8 +300,21 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.categoryService.getCategories().subscribe(cats => {
       this.categories = cats.map(cat => cat.name);
     });
-    this.fetchTotalPollCount();
-    this.loadPolls();
+
+    this.isLoading = true;
+    this.pollsSubscription = this.pollService.getPolls().subscribe({
+      next: (polls) => {
+        this.allPolls = polls;
+        this.totalPolls = polls.length;
+        this.totalPages = Math.ceil(this.totalPolls / this.pageSize);
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching polls:', error);
+        this.isLoading = false;
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -310,79 +323,46 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     }
   }
 
-  fetchTotalPollCount(): void {
-    this.pollService.getTotalPollCount().subscribe({
-      next: (count) => {
-        this.totalPolls = count;
-        this.totalPages = Math.ceil(this.totalPolls / this.pageSize);
-      },
-      error: (error) => {
-        console.error('Error fetching total poll count:', error);
-      },
-    });
-  }
-
-  loadPolls(): void {
-    this.isLoading = true;
-  
-    this.pollService
-      .getPaginatedPolls(this.pageSize, this.lastVisible)
-      .subscribe({
-        next: ({ polls, lastVisible }) => {
-          this.allPolls = polls;
-          this.lastVisible = lastVisible; 
-          this.applyFilters();
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error fetching paginated polls:', error);
-          this.isLoading = false;
-        },
-      });
-  }
-
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
     this.currentPage = page;
-  
-    if (page === 1) {
-      this.lastVisible = null;
-    }
-  
-    this.loadPolls();
+    this.applyFilters();
   }
 
   applyFilters(): void {
     let filtered = [...this.allPolls];
 
     if (this.searchQuery?.trim()) {
-      const query = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((poll) =>
-        poll.question.toLowerCase().includes(query)
+      const query = this.searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(poll =>
+        poll.question.toLowerCase().includes(query) ||
+        (poll.category && poll.category.toLowerCase().includes(query))
       );
     }
 
     if (this.statusFilter !== 'all') {
-      const isActive = this.statusFilter === 'active';
-      filtered = filtered.filter((poll) => poll.isActive === isActive);
+      filtered = filtered.filter(poll =>
+        this.statusFilter === 'active' ? poll.isActive : !poll.isActive
+      );
     }
 
     if (this.categoryFilter) {
-      if (this.categoryFilter === 'custom') {
-        filtered = filtered.filter((poll) => poll.isCustomCategory);
-      } else {
-        filtered = filtered.filter((poll) => poll.category === this.categoryFilter);
-      }
+      filtered = filtered.filter(poll => poll.category === this.categoryFilter);
     }
 
     if (this.typeFilter !== 'all') {
-      const isAnonymous = this.typeFilter === 'anonymous';
-      filtered = filtered.filter((poll) => poll.isAnonymous === isAnonymous);
+      filtered = filtered.filter(poll =>
+        this.typeFilter === 'anonymous' ? poll.isAnonymous : !poll.isAnonymous
+      );
     }
 
-    this.filteredPolls = filtered;
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.filteredPolls = filtered.slice(start, end);
+    this.totalPolls = filtered.length;
+    this.totalPages = Math.ceil(this.totalPolls / this.pageSize);
   }
 
   resetFilters(): void {
@@ -390,6 +370,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.statusFilter = 'all';
     this.categoryFilter = '';
     this.typeFilter = 'all';
+    this.currentPage = 1;
     this.applyFilters();
   }
 
@@ -418,8 +399,7 @@ export class ListPollsComponent implements OnInit, OnDestroy {
     this.reportSubmitting = true;
     this.reportError = '';
     try {
-      await this.reportService.reportPoll(this.reportingPoll.id!, this.reportReason || 'No reason provided');
-      alert('Thank you for reporting.');
+      await this.reportService.reportPoll(this.reportingPoll.id!, this.reportReason);
       this.closeReportModal();
     } catch (err: any) {
       this.reportError = err.message || 'Failed to report poll.';

@@ -11,7 +11,8 @@ import { User } from '../../models/user.model';
     <div class="container">
       <div class="card">
         <h2>Manage Users</h2>
-        <table class="table">
+        <div class="table-responsive">
+          <table class="table">
           <thead>
             <tr>
               <th>Email</th>
@@ -32,18 +33,21 @@ import { User } from '../../models/user.model';
               <td>
                 <button 
                   class="btn btn-outline danger" 
-                  *ngIf="!user.banned" 
+                  *ngIf="!user.banned && !user.isAdmin" 
                   (click)="banUser(user)"
                 >Ban</button>
                 <button 
                   class="btn btn-outline" 
-                  *ngIf="user.banned" 
+                  *ngIf="user.banned && !user.isAdmin" 
                   (click)="unbanUser(user)"
                 >Unban</button>
-              </td>
+              <span *ngIf="user.isAdmin" style="color:var(--accent-color);font-weight:600;">Admin</span>
+            </td>
             </tr>
           </tbody>
         </table>
+        </div>
+
       </div>
     </div>
   `,

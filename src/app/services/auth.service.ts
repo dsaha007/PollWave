@@ -15,10 +15,10 @@ import {
   setPersistence
 } from 'firebase/auth';
 import { hash } from 'bcryptjs'; 
-import { Observable, BehaviorSubject, from, of, ReplaySubject } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, of, ReplaySubject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { User } from '../models/user.model';
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +36,8 @@ export class AuthService {
   private authReadySubject = new ReplaySubject<boolean>(1);
   authReady$ = this.authReadySubject.asObservable();
 
+  private userUnsubscribe: (() => void) | null = null;
+
   constructor() {
     setPersistence(this.auth, browserLocalPersistence)
       .then(() => {
@@ -47,14 +49,28 @@ export class AuthService {
       });
   }
 
-private initAuthListener(): void {
+  private initAuthListener(): void {
     onAuthStateChanged(this.auth, (firebaseUser) => {
       if (firebaseUser) {
-        this.getUserData(firebaseUser.uid).then(userData => {
-          this.userSubject.next(userData ?? null);
+        if (this.userUnsubscribe) this.userUnsubscribe();
+
+        const userRef = doc(this.db, 'users', firebaseUser.uid);
+        this.userUnsubscribe = onSnapshot(userRef, (userSnap) => {
+          if (userSnap.exists()) {
+            const userData = userSnap.data() as User;
+            this.userSubject.next(userData);
+            this.authReadySubject.next(true);
+          } else {
+            this.userSubject.next(null);
+            this.authReadySubject.next(true);
+          }
+        }, (error) => {
+          console.error('Error listening to user doc:', error);
+          this.userSubject.next(null);
           this.authReadySubject.next(true);
         });
       } else {
+        if (this.userUnsubscribe) this.userUnsubscribe();
         this.userSubject.next(null);
         this.authReadySubject.next(true);
       }
@@ -70,11 +86,11 @@ private initAuthListener(): void {
       throw error;
     }
   }
+
   private async getUserData(uid: string): Promise<User | null> {
     try {
       const userRef = doc(this.db, 'users', uid);
       const userSnap = await getDoc(userRef);
-      
       if (userSnap.exists()) {
         return userSnap.data() as User;
       } else {
@@ -190,7 +206,6 @@ private initAuthListener(): void {
         await setDoc(userRef, userData);
       }
 
-      this.userSubject.next(userSnap.exists() ? userSnap.data() as User : null);
       this.router.navigate(['/']);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to sign in with Google. Please try again.');

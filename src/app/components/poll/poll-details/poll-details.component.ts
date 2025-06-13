@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../../services/auth.service';
@@ -14,7 +15,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-poll-details',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="container">
       @if (isLoading) {
@@ -117,7 +118,7 @@ Chart.register(...registerables);
                         *ngFor="let voter of option.voters" 
                         class="voter-avatar" 
                         [title]="voter" 
-                        (click)="showFullName(voter)"
+                        (click)="openVoterModal(voter)"
                       >
                         <span class="voter-initial">{{ voter.charAt(0).toUpperCase() }}</span>
                       </div>
@@ -126,6 +127,16 @@ Chart.register(...registerables);
                 </div>
               </div>
             </div>
+          </div>
+          <div *ngIf="showVoterModal" class="modal-overlay">
+          <div class="modal-content voter-modal">
+            <button class="modal-close" (click)="closeVoterModal()">&times;</button>
+            <h2 class="modal-title">Voter Name</h2>
+            <div class="voter-full-name">{{ selectedVoterName }}</div>
+            <div class="modal-actions">
+              <button class="btn btn-outline" (click)="closeVoterModal()">Close</button>
+            </div>
+          </div>
           </div>
             
           <div *ngIf="selectedVoter" class="modal-overlay">
@@ -161,6 +172,23 @@ Chart.register(...registerables);
                 (click)="openReportDialog()" 
                 *ngIf="currentUser && !isCreator"
               >Report</button>
+              <!-- Report Modal -->
+              <div *ngIf="reportModalOpen" class="modal-overlay">
+                <div class="modal-content">
+                  <button (click)="closeReportModal()" class="modal-close">&times;</button>
+                  <h2 class="modal-title">Report Poll</h2>
+                  <p class="modal-desc">Why are you reporting this poll? <span class="optional">(optional)</span></p>
+                  <textarea [(ngModel)]="reportReason" rows="3" class="form-control modal-textarea" placeholder="Enter reason (optional)"></textarea>
+                  <div *ngIf="reportError" class="alert alert-danger mb-2">{{ reportError }}</div>
+                  <div class="modal-actions">
+                    <button class="btn btn-outline" (click)="closeReportModal()" [disabled]="reportSubmitting">Cancel</button>
+                    <button class="btn btn-outline danger" (click)="submitReport()" [disabled]="reportSubmitting">
+                      <span *ngIf="reportSubmitting">Reporting...</span>
+                      <span *ngIf="!reportSubmitting">Submit Report</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             }
           </div>
         </div>
@@ -288,6 +316,17 @@ Chart.register(...registerables);
     }
     .voter-avatar:hover { transform: scale(1.1); }
     .voter-initial { text-transform: uppercase; color: black; }
+    .voter-modal {
+      max-width: 350px;
+      text-align: center;
+      padding-top: 36px;
+    }
+    .voter-full-name {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      word-break: break-word;
+    }
     .options-list.grid-options,
     .results-table.grid-options {
       display: grid;
@@ -670,4 +709,47 @@ export class PollDetailsComponent implements OnInit, OnDestroy {
         .catch(err => alert(err.message));
     }
   }
+
+  reportModalOpen = false;
+reportReason = '';
+reportError = '';
+reportSubmitting = false;
+
+openReportModal() {
+  this.reportModalOpen = true;
+  this.reportReason = '';
+  this.reportError = '';
+}
+
+closeReportModal() {
+  this.reportModalOpen = false;
+  this.reportReason = '';
+  this.reportError = '';
+}
+
+showVoterModal = false;
+selectedVoterName: string | null = null;
+
+openVoterModal(name: string) {
+  this.selectedVoterName = name;
+  this.showVoterModal = true;
+}
+
+closeVoterModal() {
+  this.showVoterModal = false;
+  this.selectedVoterName = null;
+}
+
+async submitReport() {
+  this.reportSubmitting = true;
+  this.reportError = '';
+  try {
+    await this.reportService.reportPoll(this.poll!.id!, this.reportReason);
+    this.closeReportModal();
+  } catch (err: any) {
+    this.reportError = err.message || 'Failed to report poll.';
+  } finally {
+    this.reportSubmitting = false;
+  }
+}
 }

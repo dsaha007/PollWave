@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { PollService } from '../../../services/poll.service';
 import { CategoryService } from '../../../services/category.service';
 import { Category } from '../../../models/category.model'; 
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-create-poll',
@@ -254,6 +255,7 @@ export class CreatePollComponent {
   private pollService = inject(PollService);
   private router = inject(Router);
   private categoryService = inject(CategoryService); 
+  private authService = inject(AuthService);
 
   ngOnInit(): void {
     this.categoryService.getCategories().subscribe(cats => {
@@ -307,9 +309,11 @@ export class CreatePollComponent {
   }
 
   async createPoll(): Promise<void> {
-    if (!this.isFormValid()) {
-      return;
-    }
+    if (!this.isFormValid()) return;
+    if (this.authService.getCurrentUser()?.banned) {
+    alert('You are banned and cannot create polls.');
+    return;
+  }
   
     this.isLoading = true;
     this.errorMessage = '';
