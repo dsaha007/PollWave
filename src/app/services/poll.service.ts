@@ -175,6 +175,9 @@ export class PollService {
       if (!user) {
         throw new Error('User must be authenticated to create a poll');
       }
+      if (!category || category.trim() === '') { // <-- Add this check
+        throw new Error('Category is required to create a poll');
+      }
 
       const pollOptions: PollOption[] = options.map(text => ({
         id: uuidv4(),

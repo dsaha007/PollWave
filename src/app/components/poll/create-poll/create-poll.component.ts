@@ -86,11 +86,16 @@ import { AuthService } from '../../../services/auth.service';
               [(ngModel)]="category" 
               (change)="onCategoryChange($event)"
               required
+              #categoryInput="ngModel"
+              [class.is-invalid]="categoryInput.invalid && categoryInput.touched"
             >
               <option value="" disabled>Select a category</option>
               <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
               <option value="custom">+ Add New Category</option>
             </select>
+            <div *ngIf="categoryInput.invalid && categoryInput.touched" class="error-message">
+              Category is required.
+            </div>
           </div>
           
           <div *ngIf="isAddingCategory" class="form-group">
@@ -277,11 +282,12 @@ export class CreatePollComponent {
     if (!this.question || this.question.length < 5) {
       return false;
     }
-    
     if (this.options.length < 2) {
       return false;
     }
-    
+    if (!this.category || this.category.trim() === '') { 
+      return false;
+    }
     return !this.options.some(option => !option.trim());
   }
   
@@ -309,7 +315,14 @@ export class CreatePollComponent {
   }
 
   async createPoll(): Promise<void> {
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid()) {
+      const categoryElem = document.getElementById('category');
+      if (categoryElem) {
+        (categoryElem as HTMLSelectElement).focus();
+      }
+      this.errorMessage = 'Please fill in all required fields, including category.';
+      return;
+    }
     if (this.authService.getCurrentUser()?.banned) {
     alert('You are banned and cannot create polls.');
     return;

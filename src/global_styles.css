@@ -12,6 +12,19 @@
   --transition: all 0.3s ease;
 }
 
+.error-message {
+  color: #DC3545;           /* Bright red */
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background: #ffeaea;      /* Light red background */
+  border-left: 4px solid #DC3545;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: block;
+}
+
 * {
   margin: 0;
   padding: 0;
