@@ -30,7 +30,67 @@
 
 ## Screenshots
 
-> _Add screenshots or GIFs here to showcase the UI and features._
+### User Experience
+
+#### Home Page
+![Home Page](./src/assets/UI%20Screenshots/User%20UI/HOMEPAGE.png)
+
+#### Login Page
+![Login Page](./src/assets/UI%20Screenshots/User%20UI/LOGINPAGE.png)
+
+#### Poll List Page
+![Poll List Page](./src/assets/UI%20Screenshots/User%20UI/POLLLISTPAGE.png)
+
+#### Profile Page
+![Profile Page](./src/assets/UI%20Screenshots/User%20UI/PROFILEPAGE.png)
+
+---
+
+### Poll Features
+
+#### Create Poll Page
+![Create Poll](./src/assets/UI%20Screenshots/Poll%20UI/CREATEPOLLPAGE.png)
+
+#### Poll Details Page
+![Poll Details](./src/assets/UI%20Screenshots/Poll%20UI/POLLDETAILSPAGE.png)
+
+#### Share Poll Option
+![Share Poll Option](./src/assets/UI%20Screenshots/Poll%20UI/SHAREPOLLOPTION.png)
+
+#### Report Poll Option
+![Report Poll Option](./src/assets/UI%20Screenshots/Poll%20UI/REPORTPOLLOPTION.png)
+
+---
+
+### Admin Dashboard
+
+#### Manage Categories
+![Manage Categories](./src/assets/UI%20Screenshots/Admin%20UI/MANAGECATEGORYPAGE.png)
+
+#### Manage Polls
+![Manage Polls](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEPOLLSPAGE.png)
+
+#### Manage Users
+![Manage Users](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEUSERSPAGE.png)
+
+#### Poll Analytics
+![Poll Analytics](./src/assets/UI%20Screenshots/Admin%20UI/POLLANALYTICSPAGE.png)
+
+---
+
+## UML Diagrams
+
+### System Architecture Diagram
+![System Architecture Diagram](./src/assets/UML%20DIAGRAMS/SYSTEM-ARCHITECTURE-DIAGRAM.png)
+
+### Component Diagram (Frontend)
+![Component Diagram](./src/assets/UML%20DIAGRAMS/COMPONENT-DIAGRAM(FRONTEND).png)
+
+### Service Layer Diagram (Backend/Services)
+![Service Layer Diagram](./src/assets/UML%20DIAGRAMS/SERVICE-LAYER-DIAGRAM(BACKEND).png)
+
+### User Flow Diagram
+![User Flow Diagram](./src/assets/UML%20DIAGRAMS/USER-FLOW-DIAGRAM.png)
 
 ---
 
