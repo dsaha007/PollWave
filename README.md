@@ -99,6 +99,7 @@
 - [Demo](#overview)
 - [Features](#features)
 - [Screenshots](#screenshots)
+- [UML Diagrams](#uml-diagrams)
 - [Getting Started](#getting-started)
 - [Usage Guide](#usage-guide)
 - [Project Structure](#project-structure)
