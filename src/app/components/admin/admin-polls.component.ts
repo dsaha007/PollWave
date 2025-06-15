@@ -26,6 +26,8 @@ import { Report } from '../../models/report.model';
                 <th>Status</th>
                 <th>Votes</th>
                 <th>Created By</th>
+                <th>Creator Email</th>
+                <th>Creator UID</th>
                 <th>Created At</th>
                 <th>Reports</th>
                 <th>Actions</th>
@@ -33,7 +35,7 @@ import { Report } from '../../models/report.model';
             </thead>
             <tbody>
               <tr *ngFor="let poll of polls">
-                <td>{{ poll.question }}</td>
+                <td >{{ poll.question }}</td>
                 <td>{{ poll.category }}</td>
                 <td>
                   <span [class.active]="poll.isActive" [class.closed]="!poll.isActive">
@@ -42,6 +44,8 @@ import { Report } from '../../models/report.model';
                 </td>
                 <td>{{ poll.totalVotes || 0 }}</td>
                 <td>{{ getUserName(poll.createdBy) }}</td>
+                <td>{{ getUserEmail(poll.createdBy) }}</td>
+                <td style="font-size: 0.9em; color: #888;">{{ poll.createdBy }}</td>
                 <td>{{ poll.createdAt | date:'medium' }}</td>
                 <td>
                   <button *ngIf="reports[poll.id!]?.length" class="btn btn-outline danger " (click)="viewReports(poll)">
@@ -70,26 +74,26 @@ import { Report } from '../../models/report.model';
             </tbody>
           </table>
         </div>
-          
       </div>
     </div>
-    <!-- Report Modal -->
-<div *ngIf="showReportModal" class="modal-overlay">
-  <div class="modal-content">
-    <button (click)="closeReportModal()" class="modal-close">&times;</button>
-    <h2 class="modal-title">Reports for: {{ selectedPollQuestion }}</h2>
-    <div *ngIf="selectedReportList.length === 0" class="text-gray-500">No reports for this poll.</div>
-    <div *ngFor="let report of selectedReportList" class="mb-4 border-b pb-2">
-      <div><strong>By:</strong> {{ report.reporter }}</div>
-      <div><strong>UID:</strong> {{ report.reporterUid }}</div>
-      <div><strong>Reason:</strong> {{ report.reason }}</div>
-      <div><strong>Date:</strong> {{ report.date }}</div>
+    <div *ngIf="showReportModal" class="modal-overlay">
+      <div class="modal-content">
+        <button (click)="closeReportModal()" class="modal-close">&times;</button>
+        <h2 class="modal-title">Reports for: {{ selectedPollQuestion }}</h2>
+        <div *ngIf="selectedReportList.length === 0" class="text-gray-500">No reports for this poll.</div>
+        <div *ngFor="let report of selectedReportList" class="mb-4 border-b pb-2">
+          <div><strong>By:</strong> {{ report.reporter }}</div>
+          <div><strong>UID:</strong> {{ report.reporterUid }}</div>
+          <div><strong>Reason:</strong> {{ report.reason }}</div>
+          <div><strong>Date:</strong> {{ report.date }}</div>
+        </div>
+        <div class="flex justify-end">
+          <button class="btn btn-outline" (click)="closeReportModal()">Close</button>
+        </div>
+      </div>
     </div>
-    <div class="flex justify-end">
-      <button class="btn btn-outline" (click)="closeReportModal()">Close</button>
-    </div>
-  </div>
-</div>
+
+
   `,
   styles: [`
     .active { color: var(--success-color); font-weight: bold; }
@@ -146,6 +150,11 @@ export class AdminPollsComponent implements OnInit {
     return user?.displayName || 'Unknown';
   }
 
+  getUserEmail(uid: string): string {
+    const user = this.users.find(u => u.uid === uid);
+    return user?.email || 'Unknown';
+  }
+
   loadPolls() {
     this.isLoading = true;
     this.pollService.getPolls().subscribe({
@@ -186,27 +195,27 @@ export class AdminPollsComponent implements OnInit {
   }
 
   viewReports(poll: Poll) {
-  const reportList = (this.reports[poll.id!] || []).map(r => {
-    let date: Date;
-    const createdAt: any = r.createdAt;
-    if (createdAt instanceof Date) {
-      date = createdAt;
-    } else if (createdAt && typeof createdAt.toDate === 'function') {
-      date = createdAt.toDate();
-    } else {
-      date = new Date(createdAt);
-    }
-    const reporterUser = this.users.find(u => u.uid === r.reportedBy);
-    return {
-      reason: r.reason,
-      date: date.toLocaleString(),
-      reporter: reporterUser?.displayName || 'Unknown',
-      reporterUid: r.reportedBy
-    };
-  });
-  this.selectedReportList = reportList;
-  this.selectedPollQuestion = poll.question;
-  this.showReportModal = true;
+    const reportList = (this.reports[poll.id!] || []).map(r => {
+      let date: Date;
+      const createdAt: any = r.createdAt;
+      if (createdAt instanceof Date) {
+        date = createdAt;
+      } else if (createdAt && typeof createdAt.toDate === 'function') {
+        date = createdAt.toDate();
+      } else {
+        date = new Date(createdAt);
+      }
+      const reporterUser = this.users.find(u => u.uid === r.reportedBy);
+      return {
+        reason: r.reason,
+        date: date.toLocaleString(),
+        reporter: reporterUser?.displayName || 'Unknown',
+        reporterUid: r.reportedBy
+      };
+    });
+    this.selectedReportList = reportList;
+    this.selectedPollQuestion = poll.question;
+    this.showReportModal = true;
   }
   closeReportModal() {
     this.showReportModal = false;

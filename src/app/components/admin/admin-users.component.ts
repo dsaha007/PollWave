@@ -17,6 +17,7 @@ import { User } from '../../models/user.model';
             <tr>
               <th>Email</th>
               <th>Display Name</th>
+              <th>User ID</th> 
               <th>Status</th>
               <th>Ban/Unban</th>
             </tr>
@@ -25,6 +26,7 @@ import { User } from '../../models/user.model';
             <tr *ngFor="let user of users">
               <td>{{ user.email }}</td>
               <td>{{ user.displayName }}</td>
+              <td style="font-size: 0.9em; color: #888;">{{ user.uid }}</td> 
               <td>
                 <span [class.banned]="user.banned"> 
                   {{ user.banned ? 'Banned' : 'Active' }}
@@ -47,7 +49,6 @@ import { User } from '../../models/user.model';
           </tbody>
         </table>
         </div>
-
       </div>
     </div>
   `,
