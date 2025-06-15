@@ -228,21 +228,22 @@ body {
   }
   .table td {
     border: none;
-    position: relative;
-    padding-left: 50%;
-    min-height: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 38px;
     white-space: normal;
     text-overflow: initial;
     overflow: visible;
+    padding: 10px 12px;
   }
   .table td:before {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 45%;
-    white-space: nowrap;
+    position: static;
+    margin-bottom: 2px;
     font-weight: 600;
-    color: #888;
+    color: black;
+    width: auto;
+    display: block;
     content: attr(data-label);
   }
 }

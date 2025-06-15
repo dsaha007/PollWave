@@ -35,25 +35,25 @@ import { Report } from '../../models/report.model';
             </thead>
             <tbody>
               <tr *ngFor="let poll of polls">
-                <td >{{ poll.question }}</td>
-                <td>{{ poll.category }}</td>
-                <td>
+                <td data-label="Question">{{ poll.question }}</td>
+                <td data-label="Category">{{ poll.category }}</td>
+                <td data-label="Status">
                   <span [class.active]="poll.isActive" [class.closed]="!poll.isActive">
                     {{ poll.isActive ? 'Active' : 'Closed' }}
                   </span>
                 </td>
-                <td>{{ poll.totalVotes || 0 }}</td>
-                <td>{{ getUserName(poll.createdBy) }}</td>
-                <td>{{ getUserEmail(poll.createdBy) }}</td>
-                <td style="font-size: 0.9em; color: #888;">{{ poll.createdBy }}</td>
-                <td>{{ poll.createdAt | date:'medium' }}</td>
-                <td>
-                  <button *ngIf="reports[poll.id!]?.length" class="btn btn-outline danger " (click)="viewReports(poll)">
+                <td data-label="Votes">{{ poll.totalVotes || 0 }}</td>
+                <td data-label="Created By">{{ getUserName(poll.createdBy) }}</td>
+                <td data-label="Creator Email">{{ getUserEmail(poll.createdBy) }}</td>
+                <td data-label="Creator UID" style="font-size: 0.9em; color: #888;">{{ poll.createdBy }}</td>
+                <td data-label="Created At">{{ poll.createdAt | date:'medium' }}</td>
+                <td data-label="Reports">
+                  <button *ngIf="reports[poll.id!]?.length" class="btn btn-outline danger" (click)="viewReports(poll)">
                     {{ reports[poll.id!].length }} Report(s)
                   </button>
                   <span *ngIf="!reports[poll.id!] || !reports[poll.id!].length">0</span>
                 </td>
-                <td>
+                <td data-label="Actions">
                   <div class="action-buttons">
                     <a class="btn btn-outline" [routerLink]="['/polls', poll.id]">View Poll</a>
                     <button 

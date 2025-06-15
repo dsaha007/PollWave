@@ -24,11 +24,11 @@ import { User } from '../../models/user.model';
           </thead>
           <tbody>
             <tr *ngFor="let user of users">
-              <td>{{ user.email }}</td>
-              <td>{{ user.displayName }}</td>
-              <td style="font-size: 0.9em; color: #888;">{{ user.uid }}</td> 
-              <td>
-                <span [class.banned]="user.banned"> 
+              <td data-label="Email">{{ user.email }}</td>
+              <td data-label="Display Name">{{ user.displayName }}</td>
+              <td data-label="User ID" style="font-size: 0.9em; color: #888;">{{ user.uid }}</td>
+              <td data-label="Status">
+                <span [class.banned]="user.banned">
                   {{ user.banned ? 'Banned' : 'Active' }}
                 </span>
               </td>
