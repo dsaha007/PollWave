@@ -71,7 +71,8 @@
 ![Manage Polls](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEPOLLSPAGE.png)
 
 #### Manage Users
-![Manage Users](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEUSERSPAGE.png)
+![Manage Users](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEUSERSPAGE1.png)
+![Manage Users](./src/assets/UI%20Screenshots/Admin%20UI/MANAGEUSERSPAGE2.png)
 
 #### Poll Analytics
 ![Poll Analytics](./src/assets/UI%20Screenshots/Admin%20UI/POLLANALYTICSPAGE.png)
